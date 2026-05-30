@@ -20,8 +20,8 @@ window.BHASHINI_DICTIONARY = {
     hub_welcome: "🐶 One Health approach for Rabies Surveillance 🐾",
     hub_select: "",
     hub_citizen_desc: "🏡 Report stray animal bites, exposures, request shelter aid, and track your Post-Exposure Prophylaxis (PEP) vaccination calendar 🩹.",
-    hub_admin_desc: "⚙️ Register vaccinated stray dogs, manage ABC (Animal Birth Control) campaigns, and perform cute AI Canine Face matching scans 🤖.",
-    hub_authority_desc: "📊 Review real-time colorful GIS maps, state-wide vaccination coverages, active alert clusters, and quarantine logs 🐕.",
+    hub_admin_desc: "⚙️ Register vaccinated stray dogs, manage ABC (Animal Birth Control) campaigns, and perform AI Canine Face matching scans 🤖.",
+    hub_authority_desc: "📊 Review real-time GIS maps, state-wide vaccination coverages, active alert clusters, and quarantine logs 🐕.",
     back_to_hub: "🔙 Exit to Portal Hub",
     
     // Citizen Dashboard
