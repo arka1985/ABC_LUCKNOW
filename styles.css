@@ -1806,29 +1806,38 @@ body:not(.role-active-hub) .app-footer {
   overflow: visible;
 }
 
-/* ── Animated Orbital Glow Ring around Bhashini Widget ─────────────── */
+/* ── Pulsing Glow Ring around Bhashini Widget ───────────────────────── */
 .bhashini-plugin-container::before {
   content: '';
   position: absolute;
-  inset: -7px;
-  border-radius: 40px;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg 60deg,
-    #477c3a 80deg 140deg,
-    transparent 160deg 220deg,
-    #6aad52 240deg 300deg,
-    transparent 320deg 360deg
-  );
-  animation: bhashiniRingOrbit 3.5s linear infinite;
+  inset: -5px;
+  border-radius: 38px;
+  border: 2.5px solid rgba(71, 124, 58, 0.55);
+  box-shadow:
+    0 0 10px rgba(71, 124, 58, 0.35),
+    0 0 22px rgba(71, 124, 58, 0.18),
+    0 0 40px rgba(71, 124, 58, 0.08);
+  animation: bhashiniRingPulse 2.6s ease-in-out infinite;
   z-index: -1;
-  opacity: 0.75;
-  filter: blur(1.5px);
+  pointer-events: none;
 }
 
-@keyframes bhashiniRingOrbit {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+@keyframes bhashiniRingPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 8px  rgba(71, 124, 58, 0.30),
+      0 0 18px rgba(71, 124, 58, 0.14);
+    border-color: rgba(71, 124, 58, 0.45);
+    opacity: 0.85;
+  }
+  50% {
+    box-shadow:
+      0 0 16px rgba(71, 124, 58, 0.60),
+      0 0 36px rgba(71, 124, 58, 0.28),
+      0 0 56px rgba(71, 124, 58, 0.10);
+    border-color: rgba(71, 124, 58, 0.80);
+    opacity: 1;
+  }
 }
 
 .bhashini-plugin-container:hover::before {
