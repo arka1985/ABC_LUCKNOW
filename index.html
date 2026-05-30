@@ -6,7 +6,7 @@
   <title data-i18n="app_title">Benign Canine - Rabies Surveillance System</title>
   
   <!-- Premium Custom Light Glassmorphism Theme CSS Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=2.4.0">
+  <link rel="stylesheet" href="styles.css?v=2.4.1">
   
   <!-- Leaflet CSS for real interactive geographic mapping -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -509,20 +509,7 @@
             <h3><i class="fa-solid fa-scissors text-secondary"></i> Active ABC Recovery Log</h3>
             <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Stray canines currently under medical observation post-sterilization:</p>
             <div style="display: flex; flex-direction: column; gap: 0.6rem;" id="admin-steril-observation-list">
-              <div class="quarantine-item-row" style="padding: 0.6rem; border-color: rgba(124, 58, 237, 0.2);">
-                <div class="q-left">
-                  <span style="font-weight:700; font-size:0.85rem;">Stray Dog ABC-102 (Moti)</span>
-                  <span style="font-size:0.75rem; color:var(--text-muted);">Surgeon: Dr. Patil | Ear Notch: Verified</span>
-                </div>
-                <span class="day-counter-glass" style="background: rgba(16, 185, 129, 0.1); color: var(--accent); border-color: rgba(16, 185, 129, 0.2); font-size: 0.7rem; padding: 0.2rem 0.5rem;">Fully Recovered</span>
-              </div>
-              <div class="quarantine-item-row" style="padding: 0.6rem; border-color: rgba(124, 58, 237, 0.2);">
-                <div class="q-left">
-                  <span style="font-weight:700; font-size:0.85rem;">Stray Dog ABC-108 (Sheru)</span>
-                  <span style="font-size:0.75rem; color:var(--text-muted);">Facility: Kanha Upvan Shelter | Surgery: 2026-05-28</span>
-                </div>
-                <span class="day-counter-glass" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: rgba(245, 158, 11, 0.2); font-size: 0.7rem; padding: 0.2rem 0.5rem;">Post-Op Recovery</span>
-              </div>
+              <!-- Populated dynamically -->
             </div>
           </div>
 
@@ -625,23 +612,7 @@
           <div class="glass-card card-danger" style="border-color: rgba(239, 68, 68, 0.35);">
             <h3 data-i18n="alert_feed" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation text-danger"></i> Live Surge Alerts</h3>
             <div class="alert-feed-list" id="authority-live-alerts-list">
-              <div class="alert-feed-item">
-                <div class="alert-feed-icon-pulsing"></div>
-                <div class="alert-feed-details">
-                  <h5>BITE SURGE ACTIVE HOTSPOT CLUSTER</h5>
-                  <p>Zone 5 (Sharda Nagar): 4 stray dog bites reported within 24hr radius in Zone 5 boundary.</p>
-                  <span class="alert-time">2 hours ago</span>
-                </div>
-              </div>
-              
-              <div class="alert-feed-item">
-                <div class="alert-feed-icon-pulsing"></div>
-                <div class="alert-feed-details">
-                  <h5>SUSPECTED RABID ANIMAL REPORTED</h5>
-                  <p>Zone 1 (Hazratganj): Aggressive salivating street dog reported near Hazratganj crossing by Citizen report ID 102.</p>
-                  <span class="alert-time">5 hours ago</span>
-                </div>
-              </div>
+              <!-- Populated dynamically -->
             </div>
           </div>
 
@@ -649,22 +620,7 @@
           <div class="glass-card card-warning" style="border-color: rgba(245, 158, 11, 0.35);">
             <h3 data-i18n="quarantine_observation"><i class="fa-solid fa-shield text-warning"></i> Quarantined Animals</h3>
             <div class="quarantine-grid-list">
-              
-              <div class="quarantine-item-row">
-                <div class="q-left">
-                  <span class="quarantine-title">Stray Dog Q891</span>
-                  <span class="quarantine-sub" data-i18n="healthy_status">Observation: Healthy (No symptoms)</span>
-                </div>
-                <span class="day-counter-glass">Day 7 of 10</span>
-              </div>
-
-              <div class="quarantine-item-row">
-                <div class="q-left">
-                  <span class="quarantine-title">Street Cat Q892</span>
-                  <span class="quarantine-sub" style="color: var(--danger);" data-i18n="symptomatic_status">Observation: Symptomatic (Isolate)</span>
-                </div>
-                <span class="day-counter-glass" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">Day 4 of 10</span>
-              </div>
+              <!-- Populated dynamically -->
             </div>
           </div>
 
