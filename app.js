@@ -518,8 +518,9 @@ function setupFormHandlers() {
       if (hasBiteCheckbox.checked) {
         victimDetailsContainer.style.display = 'flex';
         victimCountInput.required = true;
-        victimNameInput.required = true;
-        victimAddressInput.required = true;
+        // Name and Address are intentionally optional (not required)
+        victimNameInput.required = false;
+        victimAddressInput.required = false;
         
         const count = parseInt(victimCountInput.value) || 1;
         if (multBox) {
@@ -642,6 +643,11 @@ function setupFormHandlers() {
           `;
           alertsList.insertBefore(newItem, alertsList.firstChild);
         }
+
+        // Track in citizen submission history for correction/retraction
+        window.citizenSubmissions = window.citizenSubmissions || [];
+        window.citizenSubmissions.unshift(newBite);
+        renderMySubmissions();
 
         // Reset Form
         reportForm.reset();
@@ -923,6 +929,174 @@ window.addEventListener('appinstalled', (event) => {
     pwaInstallBtn.style.display = 'none';
   }
 });
+
+// ─── Citizen Submission History: Render & Correct ──────────────────────────
+// Renders the "My Submitted Reports" panel below the citizen report form
+function renderMySubmissions() {
+  const panel = document.getElementById('my-submissions-panel');
+  const list = document.getElementById('my-submissions-list');
+  if (!panel || !list) return;
+
+  const submissions = window.citizenSubmissions || [];
+  if (submissions.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  list.innerHTML = '';
+
+  submissions.forEach((bite, idx) => {
+    // Only show submissions that haven't been retracted
+    if (bite._retracted) return;
+
+    const isVerified = bite.verified;
+    const canEdit = !isVerified; // Cannot edit once verified by authority
+
+    const card = document.createElement('div');
+    card.className = 'submission-history-card';
+    card.style.cssText = `
+      background: rgba(255,255,255,0.06);
+      border: 1px solid ${isVerified ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.2)'};
+      border-radius: 10px;
+      padding: 0.7rem 0.85rem;
+      font-size: 0.78rem;
+    `;
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; flex-wrap:wrap;">
+        <div>
+          <strong style="font-size:0.82rem;">Report #${bite.id}</strong>
+          <span style="font-size:0.65rem; padding:0.1rem 0.4rem; border-radius:3px; margin-left:0.4rem;
+            background:${isVerified ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.12)'};
+            color:${isVerified ? '#10b981' : '#dc2626'};
+            border:1px solid ${isVerified ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.25)'};
+            font-weight:800; text-transform:uppercase;">
+            ${isVerified ? 'Verified ✅' : 'Unverified ⚠️'}
+          </span>
+        </div>
+        <span style="font-size:0.65rem; color:var(--text-muted);">${bite.date}</span>
+      </div>
+      <p style="margin:0.3rem 0 0; color:var(--text-muted);">
+        📍 ${bite.ward}, Zone ${bite.zone} &nbsp;|&nbsp; 🐾 ${bite.animal} &nbsp;|&nbsp; ${bite.severity}
+      </p>
+      ${isVerified ? `<p style="font-size:0.7rem; color:#f59e0b; margin-top:0.3rem; font-style:italic;">
+        ⚠️ This report has been officially verified. Editing is locked.
+      </p>` : `
+      <div style="display:flex; gap:0.4rem; margin-top:0.5rem; flex-wrap:wrap;">
+        <button onclick="window.prefillCorrectionForm(${bite.id})"
+          style="font-size:0.68rem; padding:0.25rem 0.55rem; border-radius:5px; background:rgba(8,145,178,0.15);
+            color:#0891b2; border:1px solid rgba(8,145,178,0.35); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:0.25rem;">
+          <i class="fa-solid fa-pen-to-square"></i> Edit & Resubmit
+        </button>
+        <button onclick="window.retractSubmission(${bite.id})"
+          style="font-size:0.68rem; padding:0.25rem 0.55rem; border-radius:5px; background:rgba(239,68,68,0.1);
+            color:#dc2626; border:1px solid rgba(239,68,68,0.3); cursor:pointer; font-weight:700; display:flex; align-items:center; gap:0.25rem;">
+          <i class="fa-solid fa-trash-can"></i> Retract / Withdraw
+        </button>
+      </div>`}
+    `;
+    list.appendChild(card);
+  });
+
+  // If all retracted, hide panel
+  if (list.children.length === 0) {
+    panel.style.display = 'none';
+  }
+}
+
+// Pre-fill the report form from a previous submission for easy correction
+window.prefillCorrectionForm = function(id) {
+  const bite = (window.citizenSubmissions || []).find(b => b.id === id);
+  if (!bite) return;
+
+  const setVal = (elId, val) => {
+    const el = document.getElementById(elId);
+    if (el && val !== undefined && val !== null) el.value = val;
+  };
+
+  setVal('form-full-name', bite.reporter);
+  setVal('form-phone', bite.phone);
+  setVal('form-animal-type', bite.animal);
+  setVal('form-animal-behavior', bite.behavior);
+  setVal('form-animal-description', bite.description);
+  setVal('form-latitude', bite.lat);
+  setVal('form-longitude', bite.lng);
+
+  const hasBiteCheckbox = document.getElementById('form-has-bite');
+  const victimDetailsContainer = document.getElementById('victim-details-container');
+  if (hasBiteCheckbox && bite.bittenCount > 0) {
+    hasBiteCheckbox.checked = true;
+    if (victimDetailsContainer) victimDetailsContainer.style.display = 'flex';
+    setVal('form-victim-count', bite.bittenCount);
+    setVal('form-victim-name', bite.victimName !== 'N/A' ? bite.victimName : '');
+    setVal('form-victim-address', bite.victimAddress !== 'N/A' ? bite.victimAddress : '');
+    setVal('form-bite-severity', bite.severity);
+  }
+
+  // Remove the old entry so it won't duplicate upon resubmit
+  bite._retracted = true;
+  renderMySubmissions();
+  const idx = window.SURVEILLANCE_DATABASE.biteCases.findIndex(b => b.id === id);
+  if (idx !== -1) window.SURVEILLANCE_DATABASE.biteCases.splice(idx, 1);
+  if (typeof window.updateMapMarkers === 'function') window.updateMapMarkers();
+  if (typeof window.renderAlertClusters === 'function') window.renderAlertClusters();
+
+  // Scroll the form into view
+  const formEl = document.getElementById('citizen-report-form');
+  if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  window.dispatchNotification('✏️ Ready to Correct', 'Form pre-filled with your previous report. Make your corrections and resubmit.', 'info');
+};
+
+// Retract/Withdraw a submitted report
+window.retractSubmission = function(id) {
+  if (!confirm('Are you sure you want to withdraw Report #' + id + '? This action will remove it from the active surveillance map. Reports already verified by authority cannot be retracted.')) return;
+
+  const bite = (window.citizenSubmissions || []).find(b => b.id === id);
+  if (!bite) return;
+  if (bite.verified) {
+    window.dispatchNotification('⚠️ Locked', 'This report has already been verified by a public health authority and cannot be retracted.', 'warning');
+    return;
+  }
+
+  // Mark retracted in history
+  bite._retracted = true;
+
+  // Remove from the SURVEILLANCE_DATABASE
+  const idx = window.SURVEILLANCE_DATABASE.biteCases.findIndex(b => b.id === id);
+  if (idx !== -1) window.SURVEILLANCE_DATABASE.biteCases.splice(idx, 1);
+
+  // Remove from authority feed if present
+  const feedEl = document.getElementById(`alert-feed-case-${id}`);
+  if (feedEl) feedEl.closest('.alert-feed-item')?.remove();
+
+  // Refresh map
+  if (typeof window.updateMapMarkers === 'function') window.updateMapMarkers();
+  if (typeof window.renderAlertClusters === 'function') window.renderAlertClusters();
+
+  // Re-render submission panel
+  renderMySubmissions();
+
+  window.dispatchNotification('🗑️ Report Withdrawn', `Report #${id} has been successfully retracted from the surveillance system.`, 'success');
+};
+
+// ─── GIS Map Layer Filter Toggle (Bite/Exposure | ABC/Vaccination | Both) ────
+// Global active layer state - default is 'both'
+window.ACTIVE_MAP_LAYER = 'both';
+
+window.setMapLayerFilter = function(layer) {
+  window.ACTIVE_MAP_LAYER = layer;
+
+  // Update active toggle button style
+  ['both', 'bites', 'abc'].forEach(l => {
+    const btn = document.getElementById(`layer-btn-${l}`);
+    if (btn) btn.classList.toggle('active', l === layer);
+  });
+
+  // Refresh markers respecting the new layer state
+  if (typeof window.updateMapMarkers === 'function') window.updateMapMarkers();
+  if (typeof window.renderAlertClusters === 'function') window.renderAlertClusters();
+};
 
 // Dynamic Exposure Report Verification handler (Local Municipal & Health Authority compliance)
 window.verifyBiteCase = function(id) {

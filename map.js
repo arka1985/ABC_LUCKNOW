@@ -498,6 +498,11 @@ window.updateMapMarkers = function() {
   const filteredQuarantines = window.filterDataset ? window.filterDataset(window.SURVEILLANCE_DATABASE.quarantines, 'start_date') : window.SURVEILLANCE_DATABASE.quarantines;
   const filteredVaccinations = window.filterDataset ? window.filterDataset(window.SURVEILLANCE_DATABASE.vaccinations, 'date') : window.SURVEILLANCE_DATABASE.vaccinations;
 
+  // Determine which layers are active
+  const activeLayer = window.ACTIVE_MAP_LAYER || 'both';
+  const showBites = activeLayer === 'both' || activeLayer === 'bites';
+  const showABC   = activeLayer === 'both' || activeLayer === 'abc';
+
   // PREMIUM ENHANCEMENT: Update sidebar stats metrics dynamically as filters apply!
   const activeBitesCountEl = document.getElementById('stat-active-bites');
   const quarantinesCountEl = document.getElementById('stat-quarantines');
@@ -508,115 +513,120 @@ window.updateMapMarkers = function() {
     quarantinesCountEl.textContent = filteredQuarantines.length;
   }
 
-  // 1. Render Active Bite Cases (Red Pins)
-  filteredBites.forEach(item => {
-    const iconHtml = `<div class="leaflet-custom-pin" style="border-color: #dc2626; color: #dc2626;">${window.ANIMAL_CLIPARTS[item.animal] || window.ANIMAL_CLIPARTS.dog}</div>`;
-    const customIcon = L.divIcon({
-      html: iconHtml,
-      className: 'custom-leaflet-icon-container',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
+  // 1. Render Active Bite Cases (Red Pins) — only if Bites/Both layer is active
+  if (showBites) {
+    filteredBites.forEach(item => {
+      const iconHtml = `<div class="leaflet-custom-pin" style="border-color: #dc2626; color: #dc2626;">${window.ANIMAL_CLIPARTS[item.animal] || window.ANIMAL_CLIPARTS.dog}</div>`;
+      const customIcon = L.divIcon({
+        html: iconHtml,
+        className: 'custom-leaflet-icon-container',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
 
-    const marker = L.marker([item.lat, item.lng], { icon: customIcon });
-    
-    // Bind detailed glassmorphism popup
-    const verifyBtnHtml = (!item.verified && (document.body.classList.contains('role-active-admin') || document.body.classList.contains('role-active-authority'))) ? `
-      <button class="popup-action-btn verify-btn" onclick="window.verifyBiteCase(${item.id})" style="font-size:0.7rem; width:100%; padding:0.35rem; border-radius:6px; cursor:pointer; background: #7c3aed; color: white; border: none; margin-top: 0.35rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.2rem;">
-        ✓ Verify Incident Report
-      </button>
-    ` : "";
+      const marker = L.marker([item.lat, item.lng], { icon: customIcon });
+      
+      // Bind detailed glassmorphism popup
+      const verifyBtnHtml = (!item.verified && (document.body.classList.contains('role-active-admin') || document.body.classList.contains('role-active-authority'))) ? `
+        <button class="popup-action-btn verify-btn" onclick="window.verifyBiteCase(${item.id})" style="font-size:0.7rem; width:100%; padding:0.35rem; border-radius:6px; cursor:pointer; background: #7c3aed; color: white; border: none; margin-top: 0.35rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.2rem;">
+          ✓ Verify Incident Report
+        </button>
+      ` : "";
 
-    const popupContent = `
-      <div class="glass-popup-card">
-        <div class="glass-popup-header" style="display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap;">
-          <div style="display: flex; gap: 0.3rem; align-items: center;">
-            <span class="animal-tag ${item.animal}">🐾 ${item.animal.toUpperCase()}</span>
-            <span class="verification-badge ${item.verified ? 'verified' : 'unverified'}" style="font-size: 0.6rem; padding: 0.15rem 0.35rem; border-radius: 4px; font-weight: 800; text-transform: uppercase; background: ${item.verified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${item.verified ? '#10b981' : '#dc2626'}; border: 1px solid ${item.verified ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
-              ${item.verified ? 'Verified ✅' : 'Unverified ⚠️'}
-            </span>
+      const popupContent = `
+        <div class="glass-popup-card">
+          <div class="glass-popup-header" style="display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap;">
+            <div style="display: flex; gap: 0.3rem; align-items: center;">
+              <span class="animal-tag ${item.animal}">🐾 ${item.animal.toUpperCase()}</span>
+              <span class="verification-badge ${item.verified ? 'verified' : 'unverified'}" style="font-size: 0.6rem; padding: 0.15rem 0.35rem; border-radius: 4px; font-weight: 800; text-transform: uppercase; background: ${item.verified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${item.verified ? '#10b981' : '#dc2626'}; border: 1px solid ${item.verified ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
+                ${item.verified ? 'Verified ✅' : 'Unverified ⚠️'}
+              </span>
+            </div>
+            <span class="severity-badge ${item.severity.replace(' ', '-').toLowerCase()}">${item.severity}</span>
           </div>
-          <span class="severity-badge ${item.severity.replace(' ', '-').toLowerCase()}">${item.severity}</span>
+          <div class="glass-popup-body">
+            <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:0.25rem;">Report #${item.id} 📝</h3>
+            <p><strong>👤 Reporter:</strong> ${item.reporter}</p>
+            <p><strong>📅 Date:</strong> ${item.date}</p>
+            <p><strong>🚨 Behavior:</strong> ${item.behavior}</p>
+            <p class="description" style="font-size:0.75rem; font-style:italic; margin-top:0.25rem;">"${item.description}"</p>
+            <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem;">📍 Zone ${item.zone} | ${item.ward}</p>
+          </div>
+          <div class="glass-popup-footer" style="margin-top:0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
+            <button class="popup-action-btn" onclick="startCitizenPEP('${item.date}')" style="font-size:0.7rem; width:100%; padding:0.35rem; border-radius:6px; cursor:pointer;">🩹 Track Exposure (PEP)</button>
+            ${verifyBtnHtml}
+          </div>
         </div>
-        <div class="glass-popup-body">
-          <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:0.25rem;">Report #${item.id} 📝</h3>
-          <p><strong>👤 Reporter:</strong> ${item.reporter}</p>
-          <p><strong>📅 Date:</strong> ${item.date}</p>
-          <p><strong>🚨 Behavior:</strong> ${item.behavior}</p>
-          <p class="description" style="font-size:0.75rem; font-style:italic; margin-top:0.25rem;">"${item.description}"</p>
-          <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem;">📍 Zone ${item.zone} | ${item.ward}</p>
-        </div>
-        <div class="glass-popup-footer" style="margin-top:0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
-          <button class="popup-action-btn" onclick="startCitizenPEP('${item.date}')" style="font-size:0.7rem; width:100%; padding:0.35rem; border-radius:6px; cursor:pointer;">🩹 Track Exposure (PEP)</button>
-          ${verifyBtnHtml}
-        </div>
-      </div>
-    `;
-    marker.bindPopup(popupContent, { maxWidth: 250, className: 'leaflet-custom-popup-wrapper' });
-    window.markersLayer.addLayer(marker);
-  });
+      `;
+      marker.bindPopup(popupContent, { maxWidth: 250, className: 'leaflet-custom-popup-wrapper' });
+      window.markersLayer.addLayer(marker);
+    });
+  }
 
-  // 2. Render Quarantined Animals (Orange Observation Pins)
-  filteredQuarantines.forEach(item => {
-    const iconHtml = `<div class="leaflet-custom-pin" style="border-color: #ea580c; color: #ea580c;">${window.ANIMAL_CLIPARTS.quarantine}</div>`;
-    const customIcon = L.divIcon({
-      html: iconHtml,
-      className: 'custom-leaflet-icon-container',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
+  // 2. Render Quarantined Animals (Orange Observation Pins) — only if ABC/Both layer is active
+  if (showABC) {
+    filteredQuarantines.forEach(item => {
+      const iconHtml = `<div class="leaflet-custom-pin" style="border-color: #ea580c; color: #ea580c;">${window.ANIMAL_CLIPARTS.quarantine}</div>`;
+      const customIcon = L.divIcon({
+        html: iconHtml,
+        className: 'custom-leaflet-icon-container',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+
+      const marker = L.marker([item.lat, item.lng], { icon: customIcon });
+      const popupContent = `
+        <div class="glass-popup-card quarantine">
+          <div class="glass-popup-header">
+            <span class="quarantine-tag" style="background:rgba(234,88,12,0.1); color:#ea580c; font-size:0.6rem; padding:0.15rem 0.35rem; border-radius:4px; font-weight:800;">🐕 QUARANTINE</span>
+            <span class="day-badge" style="font-size:0.6rem; font-weight:800;">⏳ Day ${item.day} of 10</span>
+          </div>
+          <div class="glass-popup-body" style="margin-top:0.4rem;">
+            <h3 style="font-size:0.9rem; font-weight:800;">${item.name}</h3>
+            <p><strong>🚨 Status:</strong> ${item.behavior}</p>
+            <p><strong>🏥 Facility:</strong> ${item.location}</p>
+            <p><strong>🩹 Marks:</strong> ${item.marks}</p>
+            <p><strong>🩺 Vet:</strong> ${item.updater}</p>
+            <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem;">📍 Zone ${item.zone} | ${item.ward}</p>
+          </div>
+        </div>
+      `;
+      marker.bindPopup(popupContent, { maxWidth: 250, className: 'leaflet-custom-popup-wrapper' });
+      window.markersLayer.addLayer(marker);
     });
 
-    const marker = L.marker([item.lat, item.lng], { icon: customIcon });
-    const popupContent = `
-      <div class="glass-popup-card quarantine">
-        <div class="glass-popup-header">
-          <span class="quarantine-tag" style="background:rgba(234,88,12,0.1); color:#ea580c; font-size:0.6rem; padding:0.15rem 0.35rem; border-radius:4px; font-weight:800;">🐕 QUARANTINE</span>
-          <span class="day-badge" style="font-size:0.6rem; font-weight:800;">⏳ Day ${item.day} of 10</span>
-        </div>
-        <div class="glass-popup-body" style="margin-top:0.4rem;">
-          <h3 style="font-size:0.9rem; font-weight:800;">${item.name}</h3>
-          <p><strong>🚨 Status:</strong> ${item.behavior}</p>
-          <p><strong>🏥 Facility:</strong> ${item.location}</p>
-          <p><strong>🩹 Marks:</strong> ${item.marks}</p>
-          <p><strong>🩺 Vet:</strong> ${item.updater}</p>
-          <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem;">📍 Zone ${item.zone} | ${item.ward}</p>
-        </div>
-      </div>
-    `;
-    marker.bindPopup(popupContent, { maxWidth: 250, className: 'leaflet-custom-popup-wrapper' });
-    window.markersLayer.addLayer(marker);
-  });
+    // 3. Render Vaccinated & ABC Secured Animals (Green Star Pins) — only if ABC/Both layer is active
+    filteredVaccinations.forEach(item => {
+      const iconHtml = `<div class="leaflet-custom-pin" style="border-color: #10b981; color: #10b981;">${window.ANIMAL_CLIPARTS.vaccination}</div>`;
+      const customIcon = L.divIcon({
+        html: iconHtml,
+        className: 'custom-leaflet-icon-container',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
 
-  // 3. Render Vaccinated & ABC Secured Animals (Green Star Pins)
-  filteredVaccinations.forEach(item => {
-    const iconHtml = `<div class="leaflet-custom-pin" style="border-color: #10b981; color: #10b981;">${window.ANIMAL_CLIPARTS.vaccination}</div>`;
-    const customIcon = L.divIcon({
-      html: iconHtml,
-      className: 'custom-leaflet-icon-container',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
+      const marker = L.marker([item.lat, item.lng], { icon: customIcon });
+      const popupContent = `
+        <div class="glass-popup-card vaccinated">
+          <div class="glass-popup-header">
+            <span class="vaccinated-tag" style="background:rgba(16,185,129,0.1); color:#10b981; font-size:0.6rem; padding:0.15rem 0.35rem; border-radius:4px; font-weight:800;">✅ ABC SECURED</span>
+          </div>
+          <div class="glass-popup-body" style="margin-top:0.4rem;">
+            <h3 style="font-size:0.9rem; font-weight:800;">🐶 "${item.name}" (${item.type})</h3>
+            <p><strong>📅 Date:</strong> ${item.date}</p>
+            <p><strong>✂️ Status:</strong> ${item.cnvr}</p>
+            <p><strong>🩹 Marks:</strong> ${item.marks}</p>
+            <p><strong>🧪 Batch:</strong> ${item.batch}</p>
+            <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem;">📍 Zone ${item.zone} | ${item.ward}</p>
+          </div>
+        </div>
+      `;
+      marker.bindPopup(popupContent, { maxWidth: 250, className: 'leaflet-custom-popup-wrapper' });
+      window.markersLayer.addLayer(marker);
     });
-
-    const marker = L.marker([item.lat, item.lng], { icon: customIcon });
-    const popupContent = `
-      <div class="glass-popup-card vaccinated">
-        <div class="glass-popup-header">
-          <span class="vaccinated-tag" style="background:rgba(16,185,129,0.1); color:#10b981; font-size:0.6rem; padding:0.15rem 0.35rem; border-radius:4px; font-weight:800;">✅ ABC SECURED</span>
-        </div>
-        <div class="glass-popup-body" style="margin-top:0.4rem;">
-          <h3 style="font-size:0.9rem; font-weight:800;">🐶 "${item.name}" (${item.type})</h3>
-          <p><strong>📅 Date:</strong> ${item.date}</p>
-          <p><strong>✂️ Status:</strong> ${item.cnvr}</p>
-          <p><strong>🩹 Marks:</strong> ${item.marks}</p>
-          <p><strong>🧪 Batch:</strong> ${item.batch}</p>
-          <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem;">📍 Zone ${item.zone} | ${item.ward}</p>
-        </div>
-      </div>
-    `;
-    marker.bindPopup(popupContent, { maxWidth: 250, className: 'leaflet-custom-popup-wrapper' });
-    window.markersLayer.addLayer(marker);
-  });
+  }
 };
+
 
 // Render Surge alerts as pulsing geographic concentric Leaflet circles
 window.renderAlertClusters = function() {

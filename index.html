@@ -6,7 +6,7 @@
   <title data-i18n="app_title">Benign Canine - Rabies Surveillance System</title>
   
   <!-- Premium Custom Light Glassmorphism Theme CSS Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=2.1.1">
+  <link rel="stylesheet" href="styles.css?v=2.2.0">
   
   <!-- Leaflet CSS for real interactive geographic mapping -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -237,13 +237,13 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="form-victim-name">Name of Victim (If known)</label>
-                  <input type="text" id="form-victim-name" class="glass-input" placeholder="e.g. Rahul Kumar">
+                  <label for="form-victim-name">Name of Victim <span style="font-size:0.7rem; color: var(--text-muted); font-style: italic; font-weight: 500;">(Optional)</span></label>
+                  <input type="text" id="form-victim-name" class="glass-input" placeholder="e.g. Rahul Kumar (can be left blank)">
                 </div>
 
                 <div class="form-group">
-                  <label for="form-victim-address">Address of Victim (If known)</label>
-                  <input type="text" id="form-victim-address" class="glass-input" placeholder="e.g. Sector 4, Hazratganj">
+                  <label for="form-victim-address">Address of Victim <span style="font-size:0.7rem; color: var(--text-muted); font-style: italic; font-weight: 500;">(Optional)</span></label>
+                  <input type="text" id="form-victim-address" class="glass-input" placeholder="e.g. Sector 4, Hazratganj (can be left blank)">
                 </div>
 
                 <div class="form-group">
@@ -275,6 +275,14 @@
 
               <button type="submit" class="glass-btn primary" style="width: 100%; margin-top: 0.75rem;" id="citizen-submit-btn"><i class="fa-solid fa-paper-plane"></i> Submit Report to Authority</button>
             </form>
+
+            <!-- My Submitted Reports (Correction & Retraction Panel) -->
+            <div id="my-submissions-panel" style="display:none; margin-top: 1rem;">
+              <h4 style="font-size: 0.82rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-clock-rotate-left text-primary"></i> My Submitted Reports
+              </h4>
+              <div id="my-submissions-list" style="display: flex; flex-direction: column; gap: 0.6rem;"></div>
+            </div>
           </div>
 
           <!-- Citizen Table Widget: Nearest vaccine clinics stock level -->
@@ -694,6 +702,21 @@
         
         <!-- GIS Map Interactive Filtering Overlay Bar (Sits flat above the map canvas container!) -->
         <div class="map-filter-bar">
+          <!-- Layer Toggle: Bite/Exposure | ABC/Vaccination | Both -->
+          <div class="filter-group" style="flex-direction: column; gap: 0.2rem; min-width: fit-content;">
+            <label style="font-size:0.6rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.4px;">Map Layers</label>
+            <div class="layer-toggle-group" id="layer-toggle-group">
+              <button class="layer-toggle-btn active" id="layer-btn-both" data-layer="both" title="Show all map layers" onclick="window.setMapLayerFilter('both')">
+                <i class="fa-solid fa-layer-group"></i> Both
+              </button>
+              <button class="layer-toggle-btn" id="layer-btn-bites" data-layer="bites" title="Show only Exposure/Bite cases" onclick="window.setMapLayerFilter('bites')">
+                <i class="fa-solid fa-triangle-exclamation"></i> Exposure
+              </button>
+              <button class="layer-toggle-btn" id="layer-btn-abc" data-layer="abc" title="Show only ABC/Vaccination info" onclick="window.setMapLayerFilter('abc')">
+                <i class="fa-solid fa-syringe"></i> ABC
+              </button>
+            </div>
+          </div>
           <div class="filter-group">
             <label for="filter-zone">Zone</label>
             <select id="filter-zone" class="glass-select-sm">
@@ -821,10 +844,10 @@
   <!-- Load all Scripts sequentially in global scope (NO CORS BLOCKS!) -->
   <!-- Leaflet Library and Lucknow spatial boundaries data -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="LUCKNOW/lucknow_ward_boundary.js?v=2.0.9" defer></script>
-  <script src="bhashini.js?v=2.0.9" defer></script>
-  <script src="map.js?v=2.0.9" defer></script>
-  <script src="app.js?v=2.0.9" defer></script>
+  <script src="LUCKNOW/lucknow_ward_boundary.js?v=2.2.0" defer></script>
+  <script src="bhashini.js?v=2.2.0" defer></script>
+  <script src="map.js?v=2.2.0" defer></script>
+  <script src="app.js?v=2.2.0" defer></script>
 
 </body>
 </html>
