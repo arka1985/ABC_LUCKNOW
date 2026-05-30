@@ -108,7 +108,7 @@ window.BHASHINI_DICTIONARY = {
     alert_high_bite: "🚨 BITE SURGE ACTIVE HOTSPOT CLUSTER",
     alert_suspected_rabies: "🚨 SUSPECTED RABID ANIMAL REPORTED",
     
-    branding_text: "🐾 Conceptualised and Developed by Dr. Arkaprabha Sau and Prof. Manish Kumar Singh"
+    branding_text: "Designed and Developed by Dr. Arkaprabha Sau (MBBS, MD, DPH, PhD). This is a prototype for pilot project."
   },
   hi: {
     app_title: "🐶 बिनाइन कैनाइन (Benign Canine) 🐾",
@@ -210,7 +210,7 @@ window.BHASHINI_DICTIONARY = {
     alert_high_bite: "🚨 चेतावनी: उच्च काटने की गतिविधि क्लस्टर का पता चला",
     alert_suspected_rabies: "🚨 चेतावनी: संदिग्ध पागल जानवर की सूचना मिली",
     
-    branding_text: "🐾 डॉ. अर्काप्रभा सौ और प्रो. मनीष कुमार सिंह द्वारा संकल्पित और विकसित"
+    branding_text: "डॉ. अर्काप्रभा सौ (MBBS, MD, DPH, PhD) द्वारा डिज़ाइन और विकसित। यह पायलट प्रोजेक्ट के लिए एक प्रोटोटाइप है।"
   },
   bn: {
     app_title: "🐶 বিনাইন ক্যানাইন (Benign Canine) 🐾",
@@ -312,7 +312,7 @@ window.BHASHINI_DICTIONARY = {
     alert_high_bite: "🚨 সতর্কতা: উচ্চ কামড়ের কার্যকলাপ ক্লাস্টার সনাক্ত করা হয়েছে",
     alert_suspected_rabies: "🚨 সতর্কতা: সন্দেহভাজন জলাতঙ্কগ্রস্ত পশুর খবর পাওয়া গেছে",
     
-    branding_text: "🐾 ডাঃ অর্কপ্রভ সৌ এবং অধ্যাপক মণীশ কুমার সিং দ্বারা ভাবিত এবং বিকশিত"
+    branding_text: "ডাঃ অর্কপ্রভ সৌ (MBBS, MD, DPH, PhD) দ্বারা ডিজাইন ও উন্নত। এটি পাইলট প্রকল্পের জন্য একটি প্রোটোটাইপ।"
   },
   ta: {
     app_title: "🐶 பெனைன் கெனைன் (Benign Canine) 🐾",
@@ -414,7 +414,7 @@ window.BHASHINI_DICTIONARY = {
     alert_high_bite: "🚨 எச்சரிக்கை: அதிக கடி செயல்பாடு கிளஸ்டர் கண்டறியப்பட்டுள்ளது",
     alert_suspected_rabies: "🚨 எச்சரிக்கை: சந்தேகத்திற்குரிய வெறிநாய் நடமாட்டம் புகாரளிக்கப்பட்டுள்ளது",
     
-    branding_text: "🐾 டாக்டர் அர்கபிரபா சௌ மற்றும் பேராசிரியர் மனிஷ் குமார் சிங் ஆகியோரால் வடிவமைக்கப்பட்டு உருவாக்கப்பட்டது"
+    branding_text: "டாக்டர் அர்கபிரபா சௌ (MBBS, MD, DPH, PhD) அவர்களால் வடிவமைக்கப்பட்டு உருவாக்கப்பட்டது. இது ஒரு பைலட் திட்டத்திற்கான முன்மாதிரி."
   },
   te: {
     app_title: "🐶 బినైన్ కెనైన్ (Benign Canine) 🐾",
@@ -516,7 +516,7 @@ window.BHASHINI_DICTIONARY = {
     alert_high_bite: "🚨 హెచ్చరిక: అధిక కాటు యాక్టివిటీ క్లస్టర్ గుర్తించబడింది",
     alert_suspected_rabies: "🚨 హెచ్చరిక: రేబిస్ అనుమానిత జంతువు నివేదించబడింది",
     
-    branding_text: "🐾 డాక్టర్ అర్కప్రభ సౌ మరియు ప్రొఫెసర్ మనీష్ కుమార్ సింగ్ చేత రూపొందించబడింది మరియు అభివృద్ధి చేయబడింది"
+    branding_text: "డాక్టర్ అర్కప్రభ సౌ (MBBS, MD, DPH, PhD) చేత రూపొందించబడింది మరియు అభివృద్ధి చేయబడింది. ఇది పైలట్ ప్రాజెక్ట్ కోసం ఒక నమూనా."
   }
 };
 
