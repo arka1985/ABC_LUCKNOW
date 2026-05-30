@@ -1,0 +1,36 @@
+Created At: 2026-05-30T05:14:39Z
+Completed At: 2026-05-30T05:14:39Z
+File Path: `file:///c:/Users/arka/Rabies_Surveillance_Lucknow/map.js`
+Total Lines: 827
+Total Bytes: 36161
+Showing lines 800 to 827
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+800:     `;
+801:   });
+802: 
+803:   canvas.innerHTML = `
+804:     <svg class="trend-svg" viewBox="0 0 ${width} ${height}">
+805:       <!-- Gradient Fill under path -->
+806:       <defs>
+807:         <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+808:           <stop offset="0%" stop-color="${chartColor}" stop-opacity="0.28"/>
+809:           <stop offset="100%" stop-color="${chartColor}" stop-opacity="0.0"/>
+810:         </linearGradient>
+811:       </defs>
+812:       
+813:       <!-- Area fill path -->
+814:       <path d="${pathD} L ${points[points.length-1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z" fill="url(#chartGrad)"/>
+815:       
+816:       <!-- Stroke trendline path -->
+817:       <path d="${pathD}" fill="none" stroke="${chartColor}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+818:       
+819:       <!-- Horizontal Baseline -->
+820:       <line x1="${points[0].x}" y1="${height - paddingY}" x2="${points[points.length-1].x}" y2="${height - paddingY}" stroke="rgba(0,0,0,0.06)" stroke-width="1.5"/>
+821:       
+822:       <!-- Interactive nodes -->
+823:       ${nodesHtml}
+824:     </svg>
+825:   `;
+826: };
+827: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

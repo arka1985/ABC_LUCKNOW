@@ -1,0 +1,1 @@
+I will rename the script to `.cjs` (CommonJS extension) to run it cleanly without ES module import errors since the project's `package.json` specifies `"type": "module"`.

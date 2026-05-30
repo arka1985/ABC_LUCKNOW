@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="app_title">Benign Canine - Rabies Surveillance System</title>
+  
+  <!-- Premium Custom Light Glassmorphism Theme CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=2.1.1">
+  
+  <!-- Leaflet CSS for real interactive geographic mapping -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Progressive Web App Manifest -->
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+<body class="role-active-hub">
+
+  <div class="app-container">
+    
+    <!-- Beautiful Full-Screen Portal Selector Hub Landing Overlay -->
+    <section class="portal-hub-overlay active" id="portal-hub-overlay">
+      <div class="hub-container">
+        
+        <div class="hub-header">
+          <div class="brand-section" style="justify-content: center; margin-bottom: 0.5rem;">
+            <h1 class="brand-logo" style="font-size: 2.5rem; letter-spacing: -0.5px;">
+              <i class="fa-solid fa-shield-dog"></i>
+              <span data-i18n="app_title" class="bhashini-skip-translation">Benign Canine</span>
+            </h1>
+          </div>
+          <p class="hub-subtitle" data-i18n="hub_welcome" style="font-size: 1.25rem; font-weight: 700; color: #0891b2; margin-top: 0.5rem;">One Health approach for Rabies Surveillance</p>
+          <div style="margin-top: 0.75rem;">
+            <span class="lucknow-pulse-badge bhashini-skip-translation">LUCKNOW MUNICIPAL CORPORATION</span>
+          </div>
+        </div>
+
+        <div class="hub-grid">
+          
+          <!-- Card 1: Citizen Gateway -->
+          <div class="hub-portal-card citizen" data-portal="citizen" onclick="window.switchAccessPortal('citizen')">
+            <div class="hub-card-glow"></div>
+            <div class="hub-card-icon">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h2 data-i18n="role_citizen">Citizen Portal</h2>
+            <p data-i18n="hub_citizen_desc">Report exposure incidents, request support, and track your Post-Exposure Prophylaxis (PEP) vaccination schedule.</p>
+            <span class="hub-enter-btn">Access Citizen Portal →</span>
+          </div>
+
+          <!-- Card 2: Local Administration Gateway -->
+          <div class="hub-portal-card admin" data-portal="admin" onclick="window.switchAccessPortal('admin')">
+            <div class="hub-card-glow"></div>
+            <div class="hub-card-icon">
+              <i class="fa-solid fa-user-gear"></i>
+            </div>
+            <h2 data-i18n="role_admin">Local Administration</h2>
+            <p data-i18n="hub_admin_desc">Register vaccinated stray dogs, manage Animal Birth Control (ABC) sterilization campaigns, and perform biometric scans.</p>
+            <span class="hub-enter-btn">Access Local Administration Portal →</span>
+          </div>
+
+          <!-- Card 3: Public Health Authority Gateway -->
+          <div class="hub-portal-card authority" data-portal="authority" onclick="window.switchAccessPortal('authority')">
+            <div class="hub-card-glow"></div>
+            <div class="hub-card-icon">
+              <i class="fa-solid fa-hospital-user"></i>
+            </div>
+            <h2 data-i18n="role_authority">Health Authority</h2>
+            <p data-i18n="hub_authority_desc">Review real-time colorful GIS maps, state-wide vaccination coverages, active alert clusters, and quarantine logs.</p>
+            <span class="hub-enter-btn">Access Command Center →</span>
+          </div>
+
+        </div>
+
+        <!-- Branding Credit tribute in Hub -->
+        <div class="hub-footer" style="margin-top: 4rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+          <p data-i18n="branding_text">
+            Conceptualised and Developed by <strong class="bhashini-skip-translation">Dr. Arkaprabha Sau</strong> and <strong class="bhashini-skip-translation">Prof. Manish Kumar Singh</strong>
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Top Header Layout (Visible once a Dashboard is loaded) -->
+    <header class="app-header">
+      <div class="brand-section" onclick="window.switchAccessPortal('hub')" style="cursor: pointer;" title="Back to Gateway Hub">
+        <div class="brand-logo-glow"></div>
+        <h1 class="brand-logo">
+          <i class="fa-solid fa-shield-dog"></i>
+          <span data-i18n="app_title" class="bhashini-skip-translation">Benign Canine</span>
+        </h1>
+        <span class="brand-subtitle-badge" data-i18n="app_subtitle">Lucknow Municipality</span>
+      </div>
+      
+      <!-- Quick Portal Switcher Toggles -->
+      <nav class="role-navigation">
+        <button class="role-nav-btn" data-role="citizen" onclick="window.switchAccessPortal('citizen')">
+          <i class="fa-solid fa-user-shield"></i>
+          <span data-i18n="role_citizen">Citizen Portal</span>
+        </button>
+        <button class="role-nav-btn" data-role="admin" onclick="window.switchAccessPortal('admin')">
+          <i class="fa-solid fa-user-gear"></i>
+          <span data-i18n="role_admin">Local Administration</span>
+        </button>
+        <button class="role-nav-btn" data-role="authority" onclick="window.switchAccessPortal('authority')">
+          <i class="fa-solid fa-hospital-user"></i>
+          <span data-i18n="role_authority">Health Authority</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Workspace Layout (Becomes active once a dashboard is selected) -->
+    <main class="app-main" id="portal-main-workspace">
+      
+      <!-- Left Glass Panel Sidebar -->
+      <section class="dashboard-sidebar-panel">
+        
+        <!-- Exit to Hub Link Button -->
+        <button id="back-to-hub-btn" class="glass-btn warning" onclick="window.switchAccessPortal('hub')" style="width: 100%; border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.05); color: #f59e0b; justify-content: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+          <i class="fa-solid fa-circle-left"></i>
+          <span data-i18n="back_to_hub">Exit to Portal Hub</span>
+        </button>
+
+        <!-- Shared Quick Database Statistics Widget -->
+        <div class="glass-card stat-card">
+          <div class="dashboard-stats-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="stat-box" style="border-right: 1px solid var(--glass-border); padding-right: 0.5rem;">
+              <span class="stat-number" style="font-size: 1.5rem; font-weight: 800; color: var(--danger);" id="stat-active-bites">5</span>
+              <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;" data-i18n="stat_active_cases">Active Exposure Cases</p>
+            </div>
+            <div class="stat-box">
+              <span class="stat-number" style="font-size: 1.5rem; font-weight: 800; color: var(--warning);" id="stat-quarantines">3</span>
+              <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;" data-i18n="stat_quarantine">Under Observation</p>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--glass-border); margin-top: 0.75rem; padding-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div class="herd-immunity-status">
+              <span data-i18n="stat_herd_immunity" style="font-size: 0.85rem; font-weight: 600;">Herd Immunity Status</span>
+              <span id="pep-progress-percentage" style="display: block; font-size: 0.7rem; color: var(--accent);" data-i18n="stat_herd_immunity_sub">Target: 70% in Stray Population</span>
+            </div>
+            <span class="stat-percent" style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">59%</span>
+          </div>
+        </div>
+
+        <!-- PORTAL 1: CITIZEN DASHBOARD PANEL -->
+        <div class="dashboard-panel" id="citizen-panel">
+          <div class="glass-card card-citizen">
+            <h3 data-i18n="citizen_welcome"><i class="fa-solid fa-hands-holding-child text-primary"></i> Welcome Citizen</h3>
+            <p data-i18n="citizen_desc">Report exposure incidents, request vaccination tracking, and review clinic stocks below.</p>
+          </div>
+
+          <!-- Report Exposure Form -->
+          <div class="glass-card card-citizen">
+            <h3 data-i18n="form_report_title"><i class="fa-solid fa-circle-exclamation text-danger"></i> New Exposure & Bite Report</h3>
+            <form class="glass-form" id="citizen-report-form">
+              
+              <div class="form-section-title" data-i18n="form_reporter_details">1. Reporter & Location</div>
+              
+              <div class="form-group">
+                <label for="form-full-name" data-i18n="form_full_name">Reporter Full Name</label>
+                <input type="text" id="form-full-name" class="glass-input" required placeholder="e.g. Rahul Kumar">
+              </div>
+              
+              <div class="form-group">
+                <label for="form-phone" data-i18n="form_phone">Phone Number</label>
+                <input type="text" id="form-phone" class="glass-input" required placeholder="10-digit mobile number">
+              </div>
+
+              <!-- Geolocation capturer -->
+              <div class="form-group">
+                <label data-i18n="form_auto_loc">Automatic Geolocation (GPS)</label>
+                <div class="gps-capture-box">
+                  <button type="button" class="glass-btn primary" id="capture-gps-btn">
+                    <i class="fa-solid fa-location-crosshairs"></i> <span data-i18n="capture_gps_btn">Get GPS Coordinates</span>
+                  </button>
+                  <span id="gps-status-indicator" class="gps-indicator" style="font-size: 0.75rem; color: var(--text-muted);">Not Captured Yet</span>
+                </div>
+                
+                <!-- Manual Geolocation stacked vertical inputs -->
+                <div class="manual-gps-box" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.6rem;">
+                  <div class="form-group">
+                    <label for="form-latitude" style="font-size: 0.75rem; font-weight: 700;">Latitude</label>
+                    <input type="number" step="any" id="form-latitude" class="glass-input" required value="26.8467" placeholder="e.g. 26.8467">
+                  </div>
+                  <div class="form-group">
+                    <label for="form-longitude" style="font-size: 0.75rem; font-weight: 700;">Longitude</label>
+                    <input type="number" step="any" id="form-longitude" class="glass-input" required value="80.9462" placeholder="e.g. 80.9462">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section-title" data-i18n="form_exposure_details">2. Exposure & Animal Details</div>
+
+              <div class="form-group">
+                <label for="form-animal-type" data-i18n="form_animal_type">Animal Type</label>
+                <select id="form-animal-type" class="glass-select">
+                  <option value="dog" data-i18n="form_dog">Dog</option>
+                  <option value="cat" data-i18n="form_cat">Cat</option>
+                  <option value="monkey" data-i18n="form_monkey">Monkey / Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-animal-behavior" data-i18n="form_animal_behavior">Animal Symptoms / Behaviour</label>
+                <select id="form-animal-behavior" class="glass-select">
+                  <option value="Aggressive / Salivating" data-i18n="behavior_aggressive">Aggressive / Salivating</option>
+                  <option value="Normal / Provoked Bite" data-i18n="behavior_normal">Normal / Provoked Bite</option>
+                  <option value="Sick / Lethargic" data-i18n="behavior_sick">Sick / Lethargic</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-animal-description" data-i18n="form_animal_pic">Physical Markings</label>
+                <input type="text" id="form-animal-description" class="glass-input" placeholder="e.g. White street dog, floppy ears">
+                <input type="file" accept="image/*" class="glass-input" style="margin-top: 0.5rem; font-size: 0.75rem;">
+              </div>
+
+              <div class="form-section-title" data-i18n="form_victim_details"><i class="fa-solid fa-notes-medical text-primary"></i> 3. Bitten Victim Details</div>
+              
+              <div class="glass-checkbox-group">
+                <input type="checkbox" id="form-has-bite">
+                <label for="form-has-bite" data-i18n="form_is_victim">Exposure involved a bite / scratch?</label>
+              </div>
+
+              <!-- Victim-specific conditional inputs, stacked vertically and toggleable! -->
+              <div id="victim-details-container" style="display: none; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+                <div class="form-group">
+                  <label for="form-victim-count">Number of Humans Bitten/Exposed</label>
+                  <input type="number" id="form-victim-count" class="glass-input" min="1" value="1" placeholder="e.g. 1">
+                </div>
+
+                <div class="form-group">
+                  <label for="form-victim-name">Name of Victim (If known)</label>
+                  <input type="text" id="form-victim-name" class="glass-input" placeholder="e.g. Rahul Kumar">
+                </div>
+
+                <div class="form-group">
+                  <label for="form-victim-address">Address of Victim (If known)</label>
+                  <input type="text" id="form-victim-address" class="glass-input" placeholder="e.g. Sector 4, Hazratganj">
+                </div>
+
+                <div class="form-group">
+                  <label for="form-bite-severity" data-i18n="form_bite_severity">Bite Severity (WHO Category)</label>
+                  <select id="form-bite-severity" class="glass-select">
+                    <option value="Category I" data-i18n="severity_cat1">Category I - Touch / Lick intact skin</option>
+                    <option value="Category II" data-i18n="severity_cat2">Category II - Scratches / Minor nibbles</option>
+                    <option value="Category III" data-i18n="severity_cat3">Category III - Deep Bite / Broken skin lick</option>
+                  </select>
+                </div>
+
+                <!-- Conditional options displayed only if exposed count is greater than 1! -->
+                <div id="multiple-victims-box" style="display: none; flex-direction: column; gap: 1rem; border-top: 1px dashed var(--glass-border); padding-top: 0.75rem; margin-top: 0.5rem;">
+                  <div class="form-group">
+                    <label for="form-other-victims-details">Names & Details of Other Exposed Persons</label>
+                    <textarea id="form-other-victims-details" class="glass-input" rows="2" placeholder="e.g. Name, age, or details of other exposed people..."></textarea>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="form-exposure-pattern">Exposure Incident Pattern</label>
+                    <select id="form-exposure-pattern" class="glass-select">
+                      <option value="Single localized event">Single localized incident (Same household / family)</option>
+                      <option value="Multiple distinct attacks">Multiple distinct attacks (Animal actively roaming the neighborhood)</option>
+                      <option value="Provoked group pack incident">Provoked group / pack incident</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="glass-btn primary" style="width: 100%; margin-top: 0.75rem;" id="citizen-submit-btn"><i class="fa-solid fa-paper-plane"></i> Submit Report to Authority</button>
+            </form>
+          </div>
+
+          <!-- Citizen Table Widget: Nearest vaccine clinics stock level -->
+          <div class="glass-card card-citizen">
+            <h3><i class="fa-solid fa-square-h text-primary"></i> Rabies Vaccine & Immunoglobulin Stocks</h3>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem;">Live stock records of vaccine vials and immunoglobulin doses at nearest public health centers:</p>
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Depot Facility</th>
+                  <th>Vaccines</th>
+                  <th>Globulins</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="citizen-inventory-tbody">
+                <!-- Pre-populated dynamically in app.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Citizen Feed Widget: National Health Bulletins advisories -->
+          <div class="glass-card card-citizen">
+            <h3><i class="fa-solid fa-bullhorn text-warning"></i> Health Bulletins & Field Advisories</h3>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem;">Alert field advisories, surge warnings, and quarantine mandates posted by commanders:</p>
+            <div class="bulletins-list" id="citizen-bulletins-feed">
+              <!-- Pre-populated dynamically in app.js -->
+            </div>
+          </div>
+
+          <!-- Citizen AI Biometric Face Matcher -->
+          <div class="glass-card card-citizen animate-pop" style="border-color: rgba(139, 92, 246, 0.35);">
+            <h3><i class="fa-solid fa-robot text-secondary"></i> AI Biometric Face Matcher</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Perform biometric image scanning on the national database to confirm animal identity and vaccination history.</p>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="citizen-ai-photo-upload">Upload Dog Face Picture for AI Scan</label>
+              <input type="file" id="citizen-ai-photo-upload" accept="image/*" class="glass-input" style="font-size: 0.8rem;">
+            </div>
+
+            <!-- Glowing Laser Camera Preview Container -->
+            <div class="ai-scan-visual-container" id="citizen-ai-scanner-visual">
+              <div class="ai-placeholder-msg">
+                <i class="fa-solid fa-camera"></i>
+                <span>Load image to activate biometric target nodes.</span>
+              </div>
+            </div>
+
+            <button type="button" class="glass-btn primary" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); color: white;" id="citizen-run-ai-scan-btn" disabled>
+              <i class="fa-solid fa-magnifying-glass-chart"></i> <span>Execute AI Matching Protocol</span>
+            </button>
+
+            <!-- Matching output -->
+            <div class="ai-scanner-results-container" id="citizen-ai-scanner-results"></div>
+          </div>
+
+          <!-- PEP schedule calculator widget (Highly distinct highlighted focus container) -->
+          <div class="glass-card pep-schedule-box card-citizen" id="pep-tracker-box">
+            <h3 data-i18n="pep_tracker_title"><i class="fa-solid fa-calendar-check text-accent"></i> Vaccine Schedule Calculator</h3>
+            <p data-i18n="pep_tracker_desc" style="margin-bottom: 0.75rem;">Select your prophylaxis profile and first dose date to calculate your rabies vaccine booster schedule.</p>
+            
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="pep-regimen-type">Regimen Profile Type</label>
+              <select id="pep-regimen-type" class="glass-select">
+                <option value="pep">Post-Exposure Prophylaxis (PEP) - 5 Doses</option>
+                <option value="re-exposure">Re-Exposure Prophylaxis (Previously Vaccinated) - 2 Doses</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="exposure-date-input">Date of Animal Exposure:</label>
+              <input type="date" id="exposure-date-input" class="glass-input">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="vaccine-dose0-input">Date of Dose 0 (First Vaccination Date):</label>
+              <input type="date" id="vaccine-dose0-input" class="glass-input">
+            </div>
+
+            <!-- Conditional severity and Rabies Immunoglobulin (RIG) assessment -->
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="pep-incident-severity">Exposure Category Severity</label>
+              <select id="pep-incident-severity" class="glass-select">
+                <option value="Category I">Category I - Touch / lick intact skin</option>
+                <option value="Category II">Category II - Minor scratches / minor breaks</option>
+                <option value="Category III" selected>Category III - Transdermal bites / broken skin saliva licks</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="pep-rig-container" style="margin-bottom: 1rem;">
+              <label for="pep-rig-status">Was Rabies Immunoglobulin (RIG) administered within 7 days of Dose 0?</label>
+              <select id="pep-rig-status" class="glass-select">
+                <option value="yes">Yes (Infiltrated within 7 days)</option>
+                <option value="no" selected>No (Not infiltrated / delayed)</option>
+              </select>
+            </div>
+
+            <!-- Dynamic Medical Consultation & RIG Warnings advice area -->
+            <div id="pep-medical-advice-box" style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem;"></div>
+
+            <div class="pep-progress-container">
+              <span id="pep-progress-percentage">0% Doses Completed</span>
+              <div class="pep-progress-bar">
+                <div class="pep-progress-fill" id="pep-progress-fill"></div>
+              </div>
+            </div>
+
+            <!-- Dynamic timelines list -->
+            <div class="pep-timeline" id="pep-schedule-timeline">
+              <p style="font-size: 0.8rem; text-align: center; color: var(--text-muted);">Please configure parameters above to calculate timelines.</p>
+            </div>
+          </div>
+
+          <!-- Install smartphone App Widget & Mobile Permissions Guide -->
+          <div class="glass-card card-citizen install-guide-card" style="border-color: rgba(6, 182, 212, 0.35); background: rgba(8, 145, 178, 0.03);">
+            <h3 style="color: var(--primary);"><i class="fa-solid fa-mobile-screen-button"></i> Install Smartphone App</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Access Benign Canine instantly from your home screen with native smartphone performance and fast offline operations.</p>
+            
+            <button id="pwa-install-btn" class="glass-btn primary" style="width: 100%; font-weight: 800; background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); margin-bottom: 0.75rem;">
+              <i class="fa-solid fa-download"></i> Install on This Device
+            </button>
+
+            <div class="pwa-instructions-box" style="border-top: 1px solid var(--glass-border); padding-top: 0.6rem;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-dark); display: block; margin-bottom: 0.4rem;">💡 Step-by-Step Mobile Instructions:</span>
+              <div class="instructions-accordion">
+                <details style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                  <summary style="font-weight: 700; cursor: pointer; color: var(--text-dark);"><i class="fa-brands fa-apple text-primary"></i> For iOS iPhone & iPad</summary>
+                  <ol style="margin-left: 1rem; margin-top: 0.2rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                    <li>Open <strong>Safari</strong> browser on your iPhone.</li>
+                    <li>Tap the <strong>Share</strong> button <i class="fa-solid fa-share-from-square"></i> in the navigation bar.</li>
+                    <li>Scroll down and tap <strong>Add to Home Screen</strong> <i class="fa-solid fa-square-plus"></i>.</li>
+                    <li>Confirm and the app icon will appear on your device home screen!</li>
+                  </ol>
+                </details>
+                <details style="font-size: 0.72rem; color: var(--text-muted);">
+                  <summary style="font-weight: 700; cursor: pointer; color: var(--text-dark);"><i class="fa-brands fa-android text-primary"></i> For Android & Chrome</summary>
+                  <ol style="margin-left: 1rem; margin-top: 0.2rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                    <li>Open <strong>Google Chrome</strong> or standard browser.</li>
+                    <li>Tap the <strong>Install</strong> prompt at the bottom, or tap browser <strong>Menu (3 dots)</strong>.</li>
+                    <li>Select <strong>Install app</strong> or <strong>Add to Home Screen</strong>.</li>
+                    <li>Confirm the prompt to install as a standalone app!</li>
+                  </ol>
+                </details>
+              </div>
+            </div>
+
+            <div class="permissions-guide-box" style="border-top: 1px solid var(--glass-border); margin-top: 0.6rem; padding-top: 0.6rem;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-dark); display: block; margin-bottom: 0.4rem;">🛡️ Mobile Permissions Required:</span>
+              <ul style="font-size: 0.7rem; color: var(--text-muted); list-style: none; display: flex; flex-direction: column; gap: 0.35rem;">
+                <li><i class="fa-solid fa-location-arrow text-primary"></i> <strong>Geolocation (GPS):</strong> Enabled automatically for pinpointing exposure coordinates on the GIS map.</li>
+                <li><i class="fa-solid fa-camera text-primary"></i> <strong>Camera Access:</strong> Utilized by the AI Biometric Face Matcher for street canine recognition scans.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- PORTAL 2: LOCAL ADMINISTRATION DASHBOARD PANEL -->
+        <div class="dashboard-panel" id="admin-panel">
+          <div class="glass-card card-admin">
+            <h3 data-i18n="admin_welcome"><i class="fa-solid fa-user-shield text-secondary"></i> Welcome Local Administration</h3>
+            <p data-i18n="admin_desc">Register street vaccinations, sterilized canine campaigns, and analyze biometric image matches.</p>
+          </div>
+
+          <!-- Stray Vaccination & Animal Birth Control (ABC) Register -->
+          <div class="glass-card card-admin">
+            <h3 data-i18n="register_vacc_btn"><i class="fa-solid fa-syringe text-accent"></i> Stray Vaccination & ABC Register</h3>
+            <form class="glass-form" id="admin-vaccination-form">
+              <div class="form-group">
+                <label for="admin-dog-name">Canine Nickname (If known)</label>
+                <input type="text" id="admin-dog-name" class="glass-input" required placeholder="e.g. Sheru, Moti">
+              </div>
+
+              <div class="form-group">
+                <label for="admin-animal-type" data-i18n="form_animal_type">Animal Type</label>
+                <select id="admin-animal-type" class="glass-select">
+                  <option value="dog">Dog</option>
+                  <option value="cat">Cat</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="admin-dog-marks" data-i18n="identification_marks">Identification Marks</label>
+                <input type="text" id="admin-dog-marks" class="glass-input" required placeholder="e.g. Right ear notch, black collar">
+              </div>
+
+              <div class="form-group">
+                <label for="admin-vacc-batch" data-i18n="vaccine_batch">Vaccine Batch ID</label>
+                <input type="text" id="admin-vacc-batch" class="glass-input" required placeholder="e.g. RAB-2026-B98">
+              </div>
+
+              <!-- CNVR Detailed Sterilization Fields -->
+              <div class="form-group">
+                <label for="admin-surgery-status">Surgery / Sterilization Status</label>
+                <select id="admin-surgery-status" class="glass-select">
+                  <option value="Completed (CNVR Sterile)">Sterilized (ABC Complete)</option>
+                  <option value="Pending Schedule">Surgery Scheduled</option>
+                  <option value="Admitted Post-Op">Admitted in Recovery</option>
+                  <option value="Released to Ward">Recovered & Released</option>
+                  <option value="Vaccinated Only">Vaccinated Only</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="admin-surgery-date">Sterilization Surgery Date</label>
+                <input type="date" id="admin-surgery-date" class="glass-input">
+              </div>
+
+              <div class="form-group">
+                <label for="admin-vet-surgeon">Assigned Surgeon / Facility</label>
+                <input type="text" id="admin-vet-surgeon" class="glass-input" placeholder="e.g. Dr. Patil (BMC Shelter)">
+              </div>
+
+              <div class="glass-checkbox-group">
+                <input type="checkbox" id="admin-ear-notched" checked>
+                <label for="admin-ear-notched">Ear notch complete (Notch marker applied?)</label>
+              </div>
+
+              <button type="submit" class="glass-btn primary" style="width: 100%; margin-top: 0.5rem;">Register vaccination & ABC</button>
+            </form>
+          </div>
+
+          <!-- Active Stray Sterilization (ABC) Recovery Log -->
+          <div class="glass-card card-admin">
+            <h3><i class="fa-solid fa-scissors text-secondary"></i> Active ABC Recovery Log</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Stray canines currently under medical observation post-sterilization:</p>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;" id="admin-steril-observation-list">
+              <div class="quarantine-item-row" style="padding: 0.6rem; border-color: rgba(124, 58, 237, 0.2);">
+                <div class="q-left">
+                  <span style="font-weight:700; font-size:0.85rem;">Stray Dog ABC-102 (Moti)</span>
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Surgeon: Dr. Patil | Ear Notch: Verified</span>
+                </div>
+                <span class="day-counter-glass" style="background: rgba(16, 185, 129, 0.1); color: var(--accent); border-color: rgba(16, 185, 129, 0.2); font-size: 0.7rem; padding: 0.2rem 0.5rem;">Fully Recovered</span>
+              </div>
+              <div class="quarantine-item-row" style="padding: 0.6rem; border-color: rgba(124, 58, 237, 0.2);">
+                <div class="q-left">
+                  <span style="font-weight:700; font-size:0.85rem;">Stray Dog ABC-108 (Sheru)</span>
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Facility: Kanha Upvan Shelter | Surgery: 2026-05-28</span>
+                </div>
+                <span class="day-counter-glass" style="background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: rgba(245, 158, 11, 0.2); font-size: 0.7rem; padding: 0.2rem 0.5rem;">Post-Op Recovery</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Local Administration Bulletin Publisher Form -->
+          <div class="glass-card card-admin">
+            <h3><i class="fa-solid fa-bullhorn text-secondary"></i> Post Health Bulletin</h3>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.75rem;">Broadcast municipal safety alerts or vaccine drive notifications to the Citizen dashboards:</p>
+            <form class="glass-form" id="admin-bulletin-form">
+              <div class="form-group">
+                <label for="admin-bulletin-title">Headline Title</label>
+                <input type="text" id="admin-bulletin-title" class="glass-input" required placeholder="e.g. Stray Vaccination Drive: Hazratganj">
+              </div>
+              <div class="form-group">
+                <label for="admin-bulletin-desc">Advisory message</label>
+                <textarea id="admin-bulletin-desc" class="glass-input" required rows="3" placeholder="Enter critical advice, locations, dates, or safety guidelines..."></textarea>
+              </div>
+              <button type="submit" class="glass-btn primary" style="background: var(--secondary); border: none; font-size: 0.8rem; font-weight:800;">Broadcast Bulletin Alert</button>
+            </form>
+          </div>
+
+          <!-- Local Administration AI Biometric Face Matcher -->
+          <div class="glass-card card-admin animate-pop" style="border-color: rgba(139, 92, 246, 0.35);">
+            <h3><i class="fa-solid fa-robot text-secondary"></i> AI Biometric Face Matcher</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Perform biometric image scanning on the national database to confirm animal identity and vaccination history.</p>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="admin-ai-photo-upload">Upload Dog Face Picture for AI Scan</label>
+              <input type="file" id="admin-ai-photo-upload" accept="image/*" class="glass-input" style="font-size: 0.8rem;">
+            </div>
+
+            <!-- Glowing Laser Camera Preview Container -->
+            <div class="ai-scan-visual-container" id="admin-ai-scanner-visual">
+              <div class="ai-placeholder-msg">
+                <i class="fa-solid fa-camera"></i>
+                <span>Load image to activate biometric target nodes.</span>
+              </div>
+            </div>
+
+            <button type="button" class="glass-btn primary" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); color: white;" id="admin-run-ai-scan-btn" disabled>
+              <i class="fa-solid fa-magnifying-glass-chart"></i> <span>Execute AI Matching Protocol</span>
+            </button>
+
+            <!-- Matching output -->
+            <div class="ai-scanner-results-container" id="admin-ai-scanner-results"></div>
+          </div>
+        </div>
+
+        <!-- PORTAL 3: PUBLIC HEALTH AUTHORITY COMMAND DASHBOARD PANEL -->
+        <div class="dashboard-panel" id="authority-panel">
+          <div class="glass-card card-authority">
+            <h3 data-i18n="authority_welcome"><i class="fa-solid fa-shield-virus text-accent"></i> Health Command Center</h3>
+            <p data-i18n="authority_desc">Review real-time epidemic clusters, unusual bite activity surges, and quarantine parameters.</p>
+          </div>
+
+          <!-- Manage Vaccine & Immunoglobulin Clinic Stocks Inventory Form -->
+          <div class="glass-card card-authority">
+            <h3><i class="fa-solid fa-truck-ramp-box text-accent"></i> Update Clinic Stocks Inventory</h3>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.75rem;">Modify active dose vials for rabies vaccines and immunoglobulin stocks at municipal clinics:</p>
+            <form class="glass-form" id="authority-inventory-form">
+              <div class="form-group">
+                <label for="authority-clinic-select">Select Target Health Center</label>
+                <select id="authority-clinic-select" class="glass-select">
+                  <option value="Dr. Ram Manohar Lohia Institute, Gomti Nagar">Dr. Ram Manohar Lohia Institute, Gomti Nagar</option>
+                  <option value="Balrampur Hospital, Hazratganj">Balrampur Hospital, Hazratganj</option>
+                  <option value="Shyama Prasad Mukherjee Civil Hospital">Shyama Prasad Mukherjee Civil Hospital</option>
+                  <option value="Lok Bandhu Shri Raj Narain Hospital">Lok Bandhu Shri Raj Narain Hospital</option>
+                  <option value="Lucknow Municipal Corporation (LMC) Clinic">Lucknow Municipal Corporation (LMC) Clinic</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="authority-vaccine-count">Active Rabies Vaccine vials (Dose count)</label>
+                <input type="number" id="authority-vaccine-count" class="glass-input" required min="0" placeholder="e.g. 150">
+              </div>
+              <div class="form-group">
+                <label for="authority-globulin-count">Rabies Immunoglobulin (Dose count)</label>
+                <input type="number" id="authority-globulin-count" class="glass-input" required min="0" placeholder="e.g. 35">
+              </div>
+              <button type="submit" class="glass-btn primary" style="background: var(--accent); border: none; font-size:0.8rem; font-weight:800;">Update Depot Inventory</button>
+            </form>
+          </div>
+
+          <!-- Health Authority Bulletin Publisher Form -->
+          <div class="glass-card card-authority">
+            <h3><i class="fa-solid fa-bullhorn text-accent"></i> Post Critical Health Bulletin</h3>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.75rem;">Broadcast emergency vaccine alerts, quarantine directives, or epidemic bulletins to the Citizen feed:</p>
+            <form class="glass-form" id="authority-bulletin-form">
+              <div class="form-group">
+                <label for="authority-bulletin-title">Headline Title</label>
+                <input type="text" id="authority-bulletin-title" class="glass-input" required placeholder="e.g. Emergency Advisory: Gomti Nagar">
+              </div>
+              <div class="form-group">
+                <label for="authority-bulletin-desc">Advisory Message</label>
+                <textarea id="authority-bulletin-desc" class="glass-input" required rows="3" placeholder="Enter critical advice, active bite clusters, or municipal mandates..."></textarea>
+              </div>
+              <button type="submit" class="glass-btn primary" style="background: var(--accent); border: none; font-size: 0.8rem; font-weight:800;">Broadcast Bulletin Alert</button>
+            </form>
+          </div>
+
+          <!-- Unusual Bite alerts -->
+          <div class="glass-card card-danger" style="border-color: rgba(239, 68, 68, 0.35);">
+            <h3 data-i18n="alert_feed" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation text-danger"></i> Live Surge Alerts</h3>
+            <div class="alert-feed-list" id="authority-live-alerts-list">
+              <div class="alert-feed-item">
+                <div class="alert-feed-icon-pulsing"></div>
+                <div class="alert-feed-details">
+                  <h5>BITE SURGE ACTIVE HOTSPOT CLUSTER</h5>
+                  <p>Zone 5 (Sharda Nagar): 4 stray dog bites reported within 24hr radius in Zone 5 boundary.</p>
+                  <span class="alert-time">2 hours ago</span>
+                </div>
+              </div>
+              
+              <div class="alert-feed-item">
+                <div class="alert-feed-icon-pulsing"></div>
+                <div class="alert-feed-details">
+                  <h5>SUSPECTED RABID ANIMAL REPORTED</h5>
+                  <p>Zone 1 (Hazratganj): Aggressive salivating street dog reported near Hazratganj crossing by Citizen report ID 102.</p>
+                  <span class="alert-time">5 hours ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 10-Day Quarantine Log -->
+          <div class="glass-card card-warning" style="border-color: rgba(245, 158, 11, 0.35);">
+            <h3 data-i18n="quarantine_observation"><i class="fa-solid fa-shield text-warning"></i> Quarantined Animals</h3>
+            <div class="quarantine-grid-list">
+              
+              <div class="quarantine-item-row">
+                <div class="q-left">
+                  <span class="quarantine-title">Stray Dog Q891</span>
+                  <span class="quarantine-sub" data-i18n="healthy_status">Observation: Healthy (No symptoms)</span>
+                </div>
+                <span class="day-counter-glass">Day 7 of 10</span>
+              </div>
+
+              <div class="quarantine-item-row">
+                <div class="q-left">
+                  <span class="quarantine-title">Street Cat Q892</span>
+                  <span class="quarantine-sub" style="color: var(--danger);" data-i18n="symptomatic_status">Observation: Symptomatic (Isolate)</span>
+                </div>
+                <span class="day-counter-glass" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">Day 4 of 10</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Health Authority AI Biometric Face Matcher -->
+          <div class="glass-card card-authority animate-pop" style="border-color: rgba(139, 92, 246, 0.35);">
+            <h3><i class="fa-solid fa-robot text-secondary"></i> AI Biometric Face Matcher</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Perform biometric image scanning on the national database to confirm animal identity and vaccination history.</p>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="authority-ai-photo-upload">Upload Dog Face Picture for AI Scan</label>
+              <input type="file" id="authority-ai-photo-upload" accept="image/*" class="glass-input" style="font-size: 0.8rem;">
+            </div>
+
+            <!-- Glowing Laser Camera Preview Container -->
+            <div class="ai-scan-visual-container" id="authority-ai-scanner-visual">
+              <div class="ai-placeholder-msg">
+                <i class="fa-solid fa-camera"></i>
+                <span>Load image to activate biometric target nodes.</span>
+              </div>
+            </div>
+
+            <button type="button" class="glass-btn primary" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); color: white;" id="authority-run-ai-scan-btn" disabled>
+              <i class="fa-solid fa-magnifying-glass-chart"></i> <span>Execute AI Matching Protocol</span>
+            </button>
+
+            <!-- Matching output -->
+            <div class="ai-scanner-results-container" id="authority-ai-scanner-results"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Panel (GIS Interactive Map Canvas & Filtering Panel) -->
+      <section class="map-workspace-panel">
+        
+        <!-- GIS Map Interactive Filtering Overlay Bar (Sits flat above the map canvas container!) -->
+        <div class="map-filter-bar">
+          <div class="filter-group">
+            <label for="filter-zone">Zone</label>
+            <select id="filter-zone" class="glass-select-sm">
+              <option value="All">All Zones</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-ward">Ward</label>
+            <select id="filter-ward" class="glass-select-sm" disabled>
+              <option value="All">All Wards</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-year">Year</label>
+            <select id="filter-year" class="glass-select-sm">
+              <option value="All">All Years</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-month">Month</label>
+            <select id="filter-month" class="glass-select-sm">
+              <option value="All">All Months</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-date">Date</label>
+            <input type="date" id="filter-date" class="glass-input-sm">
+          </div>
+          <button id="apply-filters-btn" class="glass-btn-sm primary" style="background: var(--accent); border: none; font-weight: 800; color: white;">Apply</button>
+          <button id="clear-filters-btn" class="glass-btn-sm warning">Reset</button>
+        </div>
+
+        <!-- Map Canvas Viewport (With beautifully rounded corners!) -->
+        <div class="map-canvas-container">
+          <div id="map"></div>
+        </div>
+
+        <!-- GIS Map Legends Panel (Flat and clean below the map container!) -->
+        <div class="map-legend-card">
+          <h4 style="font-size: 0.82rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-map-location-dot text-primary"></i> Map Legend & Layer Meanings</h4>
+          <div class="legend-items-grid">
+            <div class="legend-item">
+              <span class="legend-icon" style="border-color: #dc2626; color: #dc2626;"><i class="fa-solid fa-dog"></i></span>
+              <div class="legend-text">
+                <strong>Active Exposure Case</strong>
+                <span>Reported human exposure (Dog, Cat, Monkey)</span>
+              </div>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon" style="border-color: #ea580c; color: #ea580c;"><i class="fa-solid fa-shield-virus"></i></span>
+              <div class="legend-text">
+                <strong>Quarantine & Observation</strong>
+                <span>Isolated animals under 10-day safety screening</span>
+              </div>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon" style="border-color: #10b981; color: #10b981;"><i class="fa-solid fa-syringe"></i></span>
+              <div class="legend-text">
+                <strong>ABC Secured & Vaccinated</strong>
+                <span>Sterilized and immunized street population</span>
+              </div>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon ring-legend" style="border-color: #ef4444;"><span class="ring-core"></span></span>
+              <div class="legend-text">
+                <strong>Active Surge Hotspot</strong>
+                <span>Pulsing circles indicating exposure warnings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GIS Trend Line Panel (Positioned flat and beautifully below the map!) -->
+        <div class="gis-trend-card">
+          <h3 style="margin-bottom: 0.2rem; font-size: 0.95rem; font-weight: 800;"><i class="fa-solid fa-chart-line text-primary"></i> GIS Disease Trends</h3>
+          <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 500;">Temporal exposure & sterilization curves</p>
+          
+          <!-- Metric Toggle Tab Switches -->
+          <div class="trend-toggle-tabs" id="trend-metric-toggles">
+            <button class="trend-tab active" data-metric="bites">Bites</button>
+            <button class="trend-tab" data-metric="sterilizations">CNVR Sterile</button>
+          </div>
+
+          <div class="trend-chart-container" id="trend-chart-canvas">
+            <!-- Custom Dynamic SVG Trendline Chart goes here -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Branding footer tribute section -->
+    <footer class="app-footer">
+      <p data-i18n="branding_text">
+        Conceptualised and Developed by <strong class="bhashini-skip-translation">Dr. Arkaprabha Sau</strong> and <strong class="bhashini-skip-translation">Prof. Manish Kumar Singh</strong>
+      </p>
+    </footer>
+
+    <!-- Toasts notification panel -->
+    <div class="glass-toast-container" id="platform-toast-container"></div>
+
+  </div>
+
+  <!-- Official Bhashini Translation Plugin Container -->
+  <div class="bhashini-plugin-container"></div>
+  <script src="https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js" defer></script>
+
+  <!-- Load all Scripts sequentially in global scope (NO CORS BLOCKS!) -->
+  <!-- Leaflet Library and Lucknow spatial boundaries data -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="LUCKNOW/lucknow_ward_boundary.js?v=2.0.9" defer></script>
+  <script src="bhashini.js?v=2.0.9" defer></script>
+  <script src="map.js?v=2.0.9" defer></script>
+  <script src="app.js?v=2.0.9" defer></script>
+
+</body>
+</html>

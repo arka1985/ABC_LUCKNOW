@@ -1,0 +1,14 @@
+{
+  "name": "rabies-surveillance-system",
+  "version": "1.0.0",
+  "description": "Rabies Surveillance & Vaccination Tracking System with GIS analytics, Bhashini text-to-text translations, and AI matching.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

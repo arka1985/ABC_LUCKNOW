@@ -1,0 +1,69 @@
+Created At: 2026-05-30T05:13:23Z
+Completed At: 2026-05-30T05:13:23Z
+File Path: `file:///c:/Users/arka/Rabies_Surveillance_Lucknow/map.js`
+Total Lines: 827
+Total Bytes: 36161
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: // GIS Map Module - Rabies Surveillance System ("Benign Canine")
+2: // Localized & Optimized for Lucknow Municipality
+3: // Conceptualised & Developed by Dr. Arkaprabha Sau and Prof. Manish Kumar Singh
+4: 
+5: // Global scope initialization
+6: window.map = null;
+7: window.geojsonLayer = null;
+8: window.markersLayer = null;
+9: window.activeAlertsLayer = null;
+10: window.LUCKNOW_GEOJSON = null;
+11: 
+12: // Mock database of active surveillance data inside Lucknow Municipality
+13: window.SURVEILLANCE_DATABASE = {
+14:   biteCases: [
+15:     { id: 101, reporter: "Preeti Sharma", animal: "dog", lat: 26.8467, lng: 80.9462, date: "2026-05-26", severity: "Category III", behavior: "Aggressive / Salivating", description: "Aggressive street dog near Hazratganj crossing bit my leg.", phone: "9876543210", status: "Active", zone: "1", ward: "Hazratganj" },
+16:     { id: 102, reporter: "Rohan Das", animal: "dog", lat: 26.7640, lng: 80.9160, date: "2026-05-27", severity: "Category II", behavior: "Aggressive / Salivating", description: "Brown stray dog bit a vegetable vendor in Sharda Nagar market.", phone: "9830012345", status: "Active", zone: "5", ward: "Sharda Nagar" },
+17:     { id: 103, reporter: "Aniket Sen", animal: "cat", lat: 26.7910, lng: 80.8860, date: "2026-05-25", severity: "Category II", behavior: "Sick / Lethargic", description: "Stray white kitten scratched child near Hind Nagar park.", phone: "9123456789", status: "Active", zone: "5", ward: "Hind Nagar" },
+18:     { id: 104, reporter: "S. Bajpai", animal: "dog", lat: 26.8530, lng: 80.9990, date: "2026-05-28", severity: "Category III
+<truncated 35539 bytes>
+(day <= 28) counts[3]++;
+760:       else counts[4]++;
+761:     });
+762:     chartColor = '#10b981'; // Green for CNVR Sterile
+763:     chartLabel = 'Sterilizations';
+764:   }
+765: 
+766:   // SVG parameters
+767:   const width = 290;
+768:   const height = 90;
+769:   const paddingX = 20;
+770:   const paddingY = 15;
+771:   
+772:   const roundedCounts = counts.map(c => Math.round(c * 10) / 10);
+773:   const maxVal = Math.max(...roundedCounts, 3); // minimum scale index of 3
+774:   
+775:   const points = roundedCounts.map((val, idx) => {
+776:     const x = paddingX + (idx * (width - 2 * paddingX) / (counts.length - 1));
+777:     const y = height - paddingY - (val * (height - 2 * paddingY) / maxVal);
+778:     return { x, y, val };
+779:   });
+780: 
+781:   // Draw smooth cubic bezier curves
+782:   let pathD = `M ${points[0].x} ${points[0].y}`;
+783:   for (let i = 1; i < points.length; i++) {
+784:     const cpX1 = points[i-1].x + (points[i].x - points[i-1].x) / 2;
+785:     const cpY1 = points[i-1].y;
+786:     const cpX2 = points[i-1].x + (points[i].x - points[i-1].x) / 2;
+787:     const cpY2 = points[i].y;
+788:     pathD += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${points[i].x} ${points[i].y}`;
+789:   }
+790: 
+791:   // Generate interactive node circles and labels
+792:   let nodesHtml = '';
+793:   points.forEach((pt, idx) => {
+794:     nodesHtml += `
+795:       <circle cx="${pt.x}" cy="${pt.y}" r="4.5" fill="${chartColor}" stroke="white" stroke-width="2" style="cursor: pointer;">
+796:         <title>Week ${idx+1} ${chartLabel}: ${pt.val}</title>
+797:       </circle>
+798:       <text x="${pt.x}" y="${height - 2}" font-size="7" font-weight="800" fill="#475569" text-anchor="middle">W${idx+1}</text>
+799:       <text x="${pt.x}" y="${pt.y - 7}" font-size="7.5" font-weight="800" fill="${chartColor}" text-anchor="middle">${pt.val}</text>
+800:     `;
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

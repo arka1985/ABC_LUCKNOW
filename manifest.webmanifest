@@ -1,0 +1,23 @@
+{
+  "name": "Benign Canine - Rabies Surveillance",
+  "short_name": "Benign Canine",
+  "description": "Lucknow Municipality Disease Surveillance & stray vaccination ABC dashboard.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e0f2fe",
+  "theme_color": "#0891b2",
+  "icons": [
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/shield-dog.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/shield-dog.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

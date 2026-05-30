@@ -1,0 +1,1 @@
+I will write a script `scratch/read_initial.cjs` to find where the original `map.js` was first read by the model in the conversation history, which will give us the complete, original Leaflet-based map implementation before any modifications were made.
