@@ -2,48 +2,382 @@
 // Conceptualised & Developed by Dr. Arkaprabha Sau and Prof. Manish Kumar Singh
 
 // Pre-defined database of canine biometric records for the AI Matcher
-// Pre-defined database of canine biometric records for the AI Matcher
-window.AI_DOG_REGISTRY = [
-  { 
-    id: "AI-101", 
-    name: "Sheru 🐶", 
-    color: "Light Golden / Brown 🐕",
-    breed: "Indie Stray (Super Friendly!) 🐾",
-    marks: "Right ear notch, black spot near cute nose 🩹",
-    last_vaccinated: "2026-05-10",
-    vaccine_batch: "RAB-2026-B98",
-    cnvr_status: "Completed (ABC Complete) ✂️",
-    center: "Sarojni Nagar LMC Clinic 🏥",
-    confidence: "98.4%",
-    image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300"
+// Starts empty — populated by authenticated Local Administration via ABC registration form
+window.AI_DOG_REGISTRY = [];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTHENTICATION SYSTEM
+// Super Admin: Municipal Commissioner  |  ID: lmc  |  Password: lmc@2026
+// Local Admin & Health Authority accounts are created/deleted by Super Admin only
+// ─────────────────────────────────────────────────────────────────────────────
+window.AUTH_SYSTEM = {
+  // Active session — null when no one is logged in
+  currentUser: null,
+
+  // User store — super admin is pre-seeded; other accounts added by super admin
+  users: [
+    {
+      id: 'lmc',
+      password: 'lmc@2026',
+      role: 'admin',           // 'admin' = Local Administration
+      displayName: 'Municipal Commissioner',
+      designation: 'Super Administrator — Lucknow Municipal Corporation',
+      isSuperAdmin: true,
+      createdAt: new Date().toISOString()
+    }
+  ],
+
+  // Authenticate user — returns user object or null
+  authenticate(userId, password) {
+    return this.users.find(u => u.id === userId && u.password === password) || null;
   },
-  { 
-    id: "AI-102", 
-    name: "Moti 🐶", 
-    color: "Black and Tan 🐕",
-    breed: "Indie Stray (Playful Puppy) 🐾",
-    marks: "Left ear notch, white chest star 🩹",
-    last_vaccinated: "2026-05-15",
-    vaccine_batch: "RAB-2026-B99",
-    cnvr_status: "Completed (ABC Complete) ✂️",
-    center: "Indiranagar Vet Depot 🏥",
-    confidence: "92.1%",
-    image: "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=300"
+
+  // Add a new account (only super admin should call this)
+  addUser(id, password, role, displayName, designation) {
+    if (this.users.find(u => u.id === id)) return { ok: false, msg: `User ID "${id}" already exists.` };
+    this.users.push({ id, password, role, displayName, designation, isSuperAdmin: false, createdAt: new Date().toISOString() });
+    return { ok: true };
   },
-  { 
-    id: "AI-103", 
-    name: "Kalu 🐶", 
-    color: "Jet Black 🐕",
-    breed: "Indie Stray (Very Calm) 🐾",
-    marks: "Red collar, no notch 🎀",
-    last_vaccinated: "2026-05-20",
-    vaccine_batch: "RAB-2026-B98",
-    cnvr_status: "Vaccinated Only 💉",
-    center: "Gomti Nagar LMC Shelter 🏥",
-    confidence: "88.7%",
-    image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=300"
+
+  // Delete an account (cannot delete super admin)
+  deleteUser(id) {
+    const u = this.users.find(u => u.id === id);
+    if (!u) return { ok: false, msg: 'User not found.' };
+    if (u.isSuperAdmin) return { ok: false, msg: 'Cannot delete Super Administrator account.' };
+    this.users = this.users.filter(u => u.id !== id);
+    return { ok: true };
+  },
+
+  // Log out
+  logout() {
+    this.currentUser = null;
   }
-];
+};
+
+// ── Show the login modal for a requested portal role ────────────────────────
+window.showLoginModal = function(requestedRole) {
+  // Remove any existing modal
+  const existing = document.getElementById('auth-login-modal');
+  if (existing) existing.remove();
+
+  const roleLabel = requestedRole === 'admin' ? 'Local Administration' : 'Health Authority';
+  const roleIcon  = requestedRole === 'admin' ? 'fa-user-gear' : 'fa-hospital-user';
+  const roleColor = requestedRole === 'admin' ? '#7c3aed' : '#0891b2';
+
+  const modal = document.createElement('div');
+  modal.id = 'auth-login-modal';
+  modal.className = 'auth-modal-overlay';
+  modal.innerHTML = `
+    <div class="auth-modal-card" role="dialog" aria-modal="true" aria-label="Login">
+      <div class="auth-modal-header" style="border-top: 4px solid ${roleColor};">
+        <div class="auth-modal-icon" style="background: ${roleColor}15; color: ${roleColor};">
+          <i class="fa-solid ${roleIcon}"></i>
+        </div>
+        <div>
+          <h2 class="auth-modal-title">${roleLabel}</h2>
+          <p class="auth-modal-subtitle">Secure Authentication Required</p>
+        </div>
+        <button class="auth-modal-close" onclick="document.getElementById('auth-login-modal').remove()" title="Cancel">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form class="auth-modal-form" id="auth-login-form" onsubmit="window.handleLogin(event, '${requestedRole}')">
+        <div class="auth-form-group">
+          <label for="auth-userid"><i class="fa-solid fa-id-badge"></i> User ID</label>
+          <input type="text" id="auth-userid" class="auth-input" placeholder="Enter your User ID" autocomplete="username" required>
+        </div>
+        <div class="auth-form-group">
+          <label for="auth-password"><i class="fa-solid fa-lock"></i> Password</label>
+          <div style="position:relative;">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="auth-pwd-toggle" onclick="window.toggleAuthPwd()" title="Show/Hide password">
+              <i class="fa-solid fa-eye" id="auth-pwd-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div id="auth-error-msg" class="auth-error" style="display:none;"></div>
+        <button type="submit" class="auth-submit-btn" style="background: ${roleColor};">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In Securely
+        </button>
+      </form>
+
+      <div class="auth-modal-footer">
+        <i class="fa-solid fa-shield-halved"></i>
+        Access restricted to authorised personnel only · Lucknow Municipal Corporation
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  // Auto-focus user ID field
+  setTimeout(() => document.getElementById('auth-userid')?.focus(), 80);
+};
+
+// ── Handle login form submission ─────────────────────────────────────────────
+window.handleLogin = function(e, requestedRole) {
+  e.preventDefault();
+  const userId   = document.getElementById('auth-userid').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl    = document.getElementById('auth-error-msg');
+
+  const user = window.AUTH_SYSTEM.authenticate(userId, password);
+
+  if (!user) {
+    errEl.textContent = '❌ Invalid User ID or Password. Please try again.';
+    errEl.style.display = 'block';
+    document.getElementById('auth-password').value = '';
+    return;
+  }
+
+  // Role check: admin users can only enter admin, authority users only enter authority
+  // Super admin can enter both
+  if (!user.isSuperAdmin && user.role !== requestedRole) {
+    errEl.textContent = `❌ Your account does not have access to the ${requestedRole === 'admin' ? 'Local Administration' : 'Health Authority'} portal.`;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Login success
+  window.AUTH_SYSTEM.currentUser = user;
+  document.getElementById('auth-login-modal').remove();
+
+  // Proceed into the requested portal
+  window._enterPortalAuthenticated(requestedRole, user);
+};
+
+// ── Toggle password visibility ───────────────────────────────────────────────
+window.toggleAuthPwd = function() {
+  const input = document.getElementById('auth-password');
+  const eye   = document.getElementById('auth-pwd-eye');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.className = 'fa-solid fa-eye-slash';
+  } else {
+    input.type = 'password';
+    eye.className = 'fa-solid fa-eye';
+  }
+};
+
+// ── Enter portal after successful authentication ─────────────────────────────
+window._enterPortalAuthenticated = function(role, user) {
+  const hubOverlay = document.getElementById('portal-hub-overlay');
+  const mainLayout = document.getElementById('portal-main-workspace');
+  const sidebarPanels = document.querySelectorAll('.dashboard-panel');
+  const roleButtons   = document.querySelectorAll('.role-nav-btn');
+
+  document.body.className = `role-active-${role}`;
+
+  hubOverlay.classList.remove('active');
+  mainLayout.classList.add('active');
+
+  roleButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-role') === role);
+  });
+
+  sidebarPanels.forEach(panel => {
+    panel.classList.toggle('active', panel.id === `${role}-panel`);
+  });
+
+  if (window.map && typeof window.map.invalidateSize === 'function') {
+    setTimeout(() => window.map.invalidateSize(), 200);
+  }
+
+  // Show logout button & user badge in header
+  renderAuthHeader(user, role);
+
+  // If super admin, inject user management panel inside admin panel
+  if (user.isSuperAdmin && role === 'admin') {
+    renderUserManagementPanel();
+  }
+
+  window.dispatchNotification(
+    `✅ Welcome, ${user.displayName}`,
+    `Signed in as ${user.designation}`,
+    'success'
+  );
+};
+
+// ── Render logged-in user badge + logout button in header ────────────────────
+function renderAuthHeader(user, role) {
+  // Remove existing badge if any
+  const existing = document.getElementById('auth-header-badge');
+  if (existing) existing.remove();
+
+  const nav = document.querySelector('.role-navigation');
+  if (!nav) return;
+
+  const badge = document.createElement('div');
+  badge.id = 'auth-header-badge';
+  badge.style.cssText = `
+    display: flex; align-items: center; gap: 0.5rem;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(8,145,178,0.22); border-radius: 24px;
+    padding: 0.3rem 0.75rem 0.3rem 0.5rem; font-size: 0.75rem;
+    color: var(--text-dark); font-weight: 600; flex-shrink: 0;
+  `;
+  badge.innerHTML = `
+    <span style="width:28px;height:28px;border-radius:50%;background:${role==='admin'?'#7c3aed':'#0891b2'};
+      display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;">
+      <i class="fa-solid ${role==='admin'?'fa-user-gear':'fa-hospital-user'}"></i>
+    </span>
+    <span class="bhashini-skip-translation" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+      title="${user.displayName}">${user.displayName}</span>
+    <button onclick="window.logoutUser()" title="Sign Out"
+      style="display:flex;align-items:center;gap:0.25rem;padding:0.2rem 0.5rem;border-radius:12px;
+        background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.25);
+        font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.2s ease;">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>`;
+  nav.insertAdjacentElement('afterend', badge);
+}
+
+// ── Logout ───────────────────────────────────────────────────────────────────
+window.logoutUser = function() {
+  window.AUTH_SYSTEM.logout();
+  const badge = document.getElementById('auth-header-badge');
+  if (badge) badge.remove();
+  const mgmt = document.getElementById('user-mgmt-panel');
+  if (mgmt) mgmt.remove();
+  window.switchAccessPortal('hub');
+  window.dispatchNotification('👋 Signed Out', 'You have been securely logged out.', 'info');
+};
+
+// ── Super Admin: User Management Panel ──────────────────────────────────────
+function renderUserManagementPanel() {
+  // Remove existing panel if already there
+  const existing = document.getElementById('user-mgmt-panel');
+  if (existing) existing.remove();
+
+  const adminPanel = document.getElementById('admin-panel');
+  if (!adminPanel) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'user-mgmt-panel';
+  panel.className = 'glass-card';
+  panel.style.marginTop = '1rem';
+  panel.innerHTML = buildUserMgmtHTML();
+  adminPanel.appendChild(panel);
+}
+
+function buildUserMgmtHTML() {
+  const users = window.AUTH_SYSTEM.users;
+  const rows = users.map(u => `
+    <tr>
+      <td><code style="font-size:0.78rem;">${u.id}</code></td>
+      <td>${u.displayName}</td>
+      <td>
+        <span style="font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;font-weight:800;text-transform:uppercase;
+          background:${u.role==='admin'?'rgba(124,58,237,0.12)':'rgba(8,145,178,0.12)'};
+          color:${u.role==='admin'?'#7c3aed':'#0891b2'};">
+          ${u.role==='admin'?'Local Admin':'Health Authority'}
+          ${u.isSuperAdmin?' 👑':''}
+        </span>
+      </td>
+      <td>${u.designation}</td>
+      <td>
+        ${u.isSuperAdmin ? '<span style="font-size:0.7rem;color:var(--text-muted);">Protected</span>' :
+          `<button onclick="window.deleteUserAccount('${u.id}')"
+            style="font-size:0.68rem;padding:0.2rem 0.45rem;border-radius:4px;background:rgba(220,38,38,0.1);
+              color:#dc2626;border:1px solid rgba(220,38,38,0.3);cursor:pointer;font-weight:700;">
+            <i class="fa-solid fa-trash-can"></i> Remove
+          </button>`}
+      </td>
+    </tr>`).join('');
+
+  return `
+    <h3 style="display:flex;align-items:center;gap:0.5rem;">
+      <i class="fa-solid fa-users-gear text-primary"></i> User Account Management
+      <span style="font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:10px;background:rgba(124,58,237,0.12);
+        color:#7c3aed;font-weight:800;text-transform:uppercase;">Super Admin Only</span>
+    </h3>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem;">
+      Create or remove Local Administration and Health Authority accounts below.
+    </p>
+
+    <div style="overflow-x:auto;">
+      <table class="inventory-table" id="user-mgmt-table">
+        <thead>
+          <tr>
+            <th>User ID</th><th>Name</th><th>Role</th><th>Designation</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="user-mgmt-tbody">${rows}</tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:1rem;border-top:1px solid var(--glass-border);padding-top:0.85rem;">
+      <h4 style="font-size:0.82rem;font-weight:800;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.35rem;">
+        <i class="fa-solid fa-user-plus text-primary"></i> Create New Account
+      </h4>
+      <form id="create-user-form" onsubmit="window.createUserAccount(event)"
+        style="display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;">
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.72rem;">User ID</label>
+          <input type="text" id="new-user-id" class="glass-input" placeholder="e.g. health01" required>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.72rem;">Password</label>
+          <input type="password" id="new-user-pwd" class="glass-input" placeholder="Set a strong password" required>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.72rem;">Full Name / Display Name</label>
+          <input type="text" id="new-user-name" class="glass-input" placeholder="e.g. Dr. Anjali Verma" required>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.72rem;">Role</label>
+          <select id="new-user-role" class="glass-select">
+            <option value="admin">Local Administration</option>
+            <option value="authority">Health Authority</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;grid-column:1/-1;">
+          <label style="font-size:0.72rem;">Designation / Title</label>
+          <input type="text" id="new-user-desig" class="glass-input" placeholder="e.g. Veterinary Officer, Zone 3" required>
+        </div>
+        <div id="create-user-error" style="display:none;grid-column:1/-1;font-size:0.75rem;color:#dc2626;font-weight:600;"></div>
+        <button type="submit" class="glass-btn primary" style="grid-column:1/-1;justify-content:center;margin-top:0.25rem;">
+          <i class="fa-solid fa-user-plus"></i> Create Account
+        </button>
+      </form>
+    </div>`;
+}
+
+window.createUserAccount = function(e) {
+  e.preventDefault();
+  const id    = document.getElementById('new-user-id').value.trim();
+  const pwd   = document.getElementById('new-user-pwd').value;
+  const name  = document.getElementById('new-user-name').value.trim();
+  const role  = document.getElementById('new-user-role').value;
+  const desig = document.getElementById('new-user-desig').value.trim();
+  const errEl = document.getElementById('create-user-error');
+
+  const result = window.AUTH_SYSTEM.addUser(id, pwd, role, name, desig);
+  if (!result.ok) {
+    errEl.textContent = '❌ ' + result.msg;
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  document.getElementById('create-user-form').reset();
+
+  // Refresh the whole panel
+  const panel = document.getElementById('user-mgmt-panel');
+  if (panel) panel.innerHTML = buildUserMgmtHTML();
+
+  window.dispatchNotification('✅ Account Created', `User "${id}" (${role === 'admin' ? 'Local Admin' : 'Health Authority'}) created successfully.`, 'success');
+};
+
+window.deleteUserAccount = function(id) {
+  if (!confirm(`Remove account "${id}"? This action cannot be undone.`)) return;
+  const result = window.AUTH_SYSTEM.deleteUser(id);
+  if (!result.ok) {
+    window.dispatchNotification('❌ Error', result.msg, 'danger');
+    return;
+  }
+  const panel = document.getElementById('user-mgmt-panel');
+  if (panel) panel.innerHTML = buildUserMgmtHTML();
+  window.dispatchNotification('🗑️ Account Removed', `User "${id}" has been deleted.`, 'success');
+};
 
 // Helper to find the nearest ward & zone in Lucknow for coordinate tracking
 function findNearestLucknowWard(lat, lng) {
@@ -204,6 +538,26 @@ function setupRoleSwitcher() {
 window.switchAccessPortal = function(role) {
   const hubOverlay = document.getElementById('portal-hub-overlay');
   const mainLayout = document.getElementById('portal-main-workspace');
+
+  // ── Auth gate: admin and authority portals require login ─────────────────
+  if (role === 'admin' || role === 'authority') {
+    const cu = window.AUTH_SYSTEM && window.AUTH_SYSTEM.currentUser;
+    // Not logged in → show login modal
+    if (!cu) {
+      window.showLoginModal(role);
+      return;
+    }
+    // Logged in but wrong role (non-super-admin switching to a different portal)
+    if (!cu.isSuperAdmin && cu.role !== role) {
+      window.showLoginModal(role);
+      return;
+    }
+    // Already logged in with correct role → proceed via authenticated path
+    window._enterPortalAuthenticated(role, cu);
+    return;
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const sidebarPanels = document.querySelectorAll('.dashboard-panel');
   const roleButtons = document.querySelectorAll('.role-nav-btn');
   
@@ -217,37 +571,25 @@ window.switchAccessPortal = function(role) {
     return;
   }
   
-  // Enter dedicated dashboard
+  // Citizen portal — no auth required
   hubOverlay.classList.remove('active');
   mainLayout.classList.add('active');
   
-  // Active quick header navigation links
   roleButtons.forEach(btn => {
-    if (btn.getAttribute('data-role') === role) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+    btn.classList.toggle('active', btn.getAttribute('data-role') === role);
   });
 
-  // Hide all side panel dashboards and reveal only active one
   sidebarPanels.forEach(panel => {
-    if (panel.id === `${role}-panel`) {
-      panel.classList.add('active');
-    } else {
-      panel.classList.remove('active');
-    }
+    panel.classList.toggle('active', panel.id === `${role}-panel`);
   });
 
-  // Refresh Map canvas size if custom map has refresh function
   if (window.map && typeof window.map.invalidateSize === 'function') {
-    setTimeout(() => {
-      window.map.invalidateSize();
-    }, 200);
+    setTimeout(() => window.map.invalidateSize(), 200);
   }
 
-  window.dispatchNotification("Portal Entered 🐾", `You have securely entered the ${role.toUpperCase()} module!`, "success");
+  window.dispatchNotification("Portal Entered 🐾", `You have entered the ${role.toUpperCase()} module!`, "success");
 };
+
 
 // Connect automatic smartphone Geolocation capture
 function setupGeolocation() {

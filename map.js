@@ -10,33 +10,12 @@ window.activeAlertsLayer = null;
 
 // Mock database of active surveillance data inside Lucknow Municipality
 window.SURVEILLANCE_DATABASE = {
-  biteCases: [
-    { id: 101, reporter: "Preeti Sharma", animal: "dog", lat: 26.8467, lng: 80.9462, date: "2026-05-26", severity: "Category III", behavior: "Aggressive / Salivating", description: "Aggressive street dog near Hazratganj crossing bit my leg.", phone: "9876543210", status: "Active", verified: true, zone: "1", ward: "Hazratganj" },
-    { id: 102, reporter: "Rohan Das", animal: "dog", lat: 26.7640, lng: 80.9160, date: "2026-05-27", severity: "Category II", behavior: "Aggressive / Salivating", description: "Brown stray dog bit a vegetable vendor in Sharda Nagar market.", phone: "9830012345", status: "Active", verified: false, zone: "5", ward: "Sharda Nagar" },
-    { id: 103, reporter: "Aniket Sen", animal: "cat", lat: 26.7910, lng: 80.8860, date: "2026-05-25", severity: "Category II", behavior: "Sick / Lethargic", description: "Stray white kitten scratched child near Hind Nagar park.", phone: "9123456789", status: "Active", verified: true, zone: "5", ward: "Hind Nagar" },
-    { id: 104, reporter: "S. Bajpai", animal: "dog", lat: 26.8530, lng: 80.9990, date: "2026-05-28", severity: "Category III", behavior: "Aggressive / Salivating", description: "Highly aggressive salivating dog near Gomti Nagar Extension park.", phone: "9940123456", status: "Active", verified: true, zone: "4", ward: "Gomti Nagar" },
-    { id: 105, reporter: "K. Srivastava", animal: "monkey", lat: 26.8660, lng: 80.9020, date: "2026-05-24", severity: "Category I", behavior: "Normal / Provoked Bite", description: "Temple monkey grabbed bag and bit my finger near Chowk.", phone: "9845098765", status: "Resolved", verified: true, zone: "6", ward: "Chowk" },
-    { id: 106, reporter: "M. Shukla", animal: "dog", lat: 26.7550, lng: 80.8520, date: "2026-05-28", severity: "Category III", behavior: "Aggressive / Salivating", description: "Aggressive street dog bit pedestrian near Sarojni Nagar Part 1.", phone: "9840192837", status: "Active", verified: true, zone: "5", ward: "Sarojni Nagar Part 1" },
-    { id: 107, reporter: "R. Trivedi", animal: "dog", lat: 26.8730, lng: 80.9980, date: "2026-05-27", severity: "Category II", behavior: "Sick / Lethargic", description: "Stray dog bite near Indiranagar Sector 14 market.", phone: "9988776655", status: "Active", verified: true, zone: "7", ward: "Indiranagar" }
-  ],
-  quarantines: [
-    { id: 201, name: "Stray Dog (ID: Q891) 🐶", lat: 26.7910, lng: 80.8860, start_date: "2026-05-22", day: 7, behavior: "Healthy (No Rabies Symptoms) 💚", location: "Kanha Upvan LMC Shelter", marks: "Right ear notch, brown coat", updater: "Dr. A. Verma", zone: "5", ward: "Hind Nagar" },
-    { id: 202, name: "Street Cat (ID: Q892) 🐈", lat: 26.8467, lng: 80.9462, start_date: "2026-05-25", day: 4, behavior: "Symptomatic (Isolate / Verify) 🚨", location: "Hazratganj Vet Clinic", marks: "White collar, black tail", updater: "Dr. S. Patil", zone: "1", ward: "Hazratganj" },
-    { id: 203, name: "Street Dog (ID: Q893) 🐶", lat: 26.8530, lng: 80.9990, start_date: "2026-05-20", day: 9, behavior: "Healthy (No Rabies Symptoms) 💚", location: "Gomti Nagar LMC Shelter", marks: "Yellow collar, black spots", updater: "Dr. B. Roy", zone: "4", ward: "Gomti Nagar" }
-  ],
-  vaccinations: [
-    { id: 301, name: "Sheru", type: "dog", lat: 26.7550, lng: 80.8520, date: "2026-05-10", marks: "Ear Notch Right", batch: "RAB-2026-B98", cnvr: "Sterilized & Vaccinated (ABC Complete)", center: "Sarojni Nagar LMC Clinic", zone: "5", ward: "Sarojni Nagar Part 1" },
-    { id: 302, name: "Moti", type: "dog", lat: 26.7640, lng: 80.9160, date: "2026-05-15", marks: "Left Ear Notch, Red collar", batch: "RAB-2026-B99", cnvr: "Sterilized & Vaccinated (ABC Complete)", center: "Sharda Nagar Shelter", zone: "5", ward: "Sharda Nagar" },
-    { id: 303, name: "Kalu", type: "dog", lat: 26.8467, lng: 80.9462, date: "2026-05-20", marks: "Black collar", batch: "RAB-2026-B98", cnvr: "Vaccinated Only", center: "Hazratganj LMC Drive", zone: "1", ward: "Hazratganj" },
-    { id: 304, name: "Lucy", type: "dog", lat: 26.8530, lng: 80.9990, date: "2026-05-22", marks: "Ear Notch Right, spotted tail", batch: "RAB-2026-C01", cnvr: "Sterilized & Vaccinated (ABC Complete)", center: "Gomti Nagar LMC Hub", zone: "4", ward: "Gomti Nagar" },
-    { id: 305, name: "Rocky", type: "dog", lat: 26.8660, lng: 80.9020, date: "2026-05-21", marks: "Green collar", batch: "RAB-2026-C02", cnvr: "Sterilized & Vaccinated (ABC Complete)", center: "Chowk Health Clinic", zone: "6", ward: "Chowk" },
-    { id: 306, name: "Bruno", type: "dog", lat: 26.8730, lng: 80.9980, date: "2026-05-22", marks: "Right Ear Notch", batch: "RAB-2026-C01", cnvr: "Sterilized & Vaccinated (ABC Complete)", center: "Indiranagar LMC Depot", zone: "7", ward: "Indiranagar" }
-  ],
-  drives: [
-    { id: 401, title: "Mass Dog Vaccination Drive", host: "LMC Zone 1 Authority", lat: 26.8467, lng: 80.9462, date: "2026-05-30", details: "Target: 300 street dogs in Zone 1 (Hazratganj & vicinity)." },
-    { id: 402, title: "ABC Campaign Sharda Nagar", host: "LMC Vet Squad", lat: 26.7640, lng: 80.9160, date: "2026-06-01", details: "Catch Neuter Vaccinate Return drive in Sharda Nagar Sector 5." }
-  ]
+  biteCases:    [],  // Populated by citizen & authority submissions
+  quarantines:  [],  // Populated by Local Administration
+  vaccinations: [],  // Populated by Local Administration ABC registrations
+  drives:       []   // Populated by Local Administration
 };
+
 
 // Premium SVG Outlines for interactive map markers
 window.ANIMAL_CLIPARTS = {
