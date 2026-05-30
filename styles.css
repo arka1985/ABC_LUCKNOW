@@ -1826,48 +1826,14 @@ body:not(.role-active-hub) .app-footer {
   filter: blur(1.5px);
 }
 
-.bhashini-plugin-container::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 36px;
-  border: 2px solid rgba(71, 124, 58, 0.35);
-  box-shadow:
-    0 0 10px rgba(71, 124, 58, 0.25),
-    0 0 22px rgba(71, 124, 58, 0.12),
-    inset 0 0 8px rgba(71, 124, 58, 0.06);
-  animation: bhashiniRingPulse 2.8s ease-in-out infinite;
-  z-index: -1;
-  pointer-events: none;
-}
-
 @keyframes bhashiniRingOrbit {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
 
-@keyframes bhashiniRingPulse {
-  0%, 100% {
-    box-shadow:
-      0 0 10px rgba(71, 124, 58, 0.25),
-      0 0 22px rgba(71, 124, 58, 0.12);
-    border-color: rgba(71, 124, 58, 0.35);
-  }
-  50% {
-    box-shadow:
-      0 0 18px rgba(71, 124, 58, 0.5),
-      0 0 38px rgba(71, 124, 58, 0.22);
-    border-color: rgba(71, 124, 58, 0.65);
-  }
-}
-
 .bhashini-plugin-container:hover::before {
   opacity: 1;
   animation-duration: 1.8s;
-}
-
-.bhashini-plugin-container:hover::after {
-  animation-duration: 1.2s;
 }
 
 .bhashini-horizontal-bar {
