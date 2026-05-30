@@ -1707,6 +1707,23 @@ body:not(.role-active-hub) .app-footer {
   background: #0772a1;
 }
 
+/* ── Proximity Cluster Alert Pin ────────────────────────────────────── */
+@keyframes clusterPinPulse {
+  0%   { box-shadow: 0 0 0 0px rgba(220, 38, 38, 0.55), 0 4px 14px rgba(0,0,0,0.25); transform: scale(1); }
+  50%  { box-shadow: 0 0 0 9px rgba(220, 38, 38, 0.0),  0 4px 14px rgba(0,0,0,0.25); transform: scale(1.08); }
+  100% { box-shadow: 0 0 0 0px rgba(220, 38, 38, 0.55), 0 4px 14px rgba(0,0,0,0.25); transform: scale(1); }
+}
+
+/* Cluster alert card in the authority live-feed gets a coloured left accent border */
+.alert-feed-item[style*="border-left"] {
+  padding-left: 0.6rem;
+}
+
+@keyframes pulse-glow-icon {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(1.25); }
+}
+
 .gis-trend-card {
   position: static !important;
   width: 100% !important;

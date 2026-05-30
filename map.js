@@ -628,43 +628,262 @@ window.updateMapMarkers = function() {
 };
 
 
+
+// ─── Haversine Distance Calculator ──────────────────────────────────────────
+// Returns distance in METRES between two [lat, lng] coordinates
+function haversineDistanceMetres(lat1, lng1, lat2, lng2) {
+  const R = 6371000; // Earth radius in metres
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ─── Proximity Cluster Detector ──────────────────────────────────────────────
+// Scans all active bite cases and returns clusters where ≥2 cases fall within
+// the specified radius (default 100 m) of the "seed" case.
+window.detectProximityClusters = function(biteCases, radiusMetres = 100) {
+  const clusters = [];
+  const processed = new Set();
+
+  biteCases.forEach((seed, i) => {
+    if (processed.has(seed.id)) return;
+
+    const group = [seed];
+    biteCases.forEach((other, j) => {
+      if (i === j || processed.has(other.id)) return;
+      const dist = haversineDistanceMetres(seed.lat, seed.lng, other.lat, other.lng);
+      if (dist <= radiusMetres) {
+        group.push({ ...other, distanceFromSeed: Math.round(dist) });
+      }
+    });
+
+    if (group.length >= 2) {
+      // Compute centroid of cluster
+      const centLat = group.reduce((s, c) => s + c.lat, 0) / group.length;
+      const centLng = group.reduce((s, c) => s + c.lng, 0) / group.length;
+
+      clusters.push({
+        seedId: seed.id,
+        centroid: [centLat, centLng],
+        cases: group,
+        caseCount: group.length,
+        ward: seed.ward,
+        zone: seed.zone,
+        highestSeverity: group.some(c => c.severity === 'Category III') ? 'Category III'
+          : group.some(c => c.severity === 'Category II') ? 'Category II' : 'Category I'
+      });
+
+      // Mark all members as processed to avoid duplicating clusters
+      group.forEach(c => processed.add(c.id));
+    }
+  });
+
+  return clusters;
+};
+
 // Render Surge alerts as pulsing geographic concentric Leaflet circles
+// Now fully dynamic: uses Haversine proximity clustering instead of hardcoded zones
 window.renderAlertClusters = function() {
   if (!window.map || !window.activeAlertsLayer) return;
   
   // Clear existing active surge layers
   window.activeAlertsLayer.clearLayers();
 
-  const filteredBites = window.filterDataset ? window.filterDataset(window.SURVEILLANCE_DATABASE.biteCases, 'date') : window.SURVEILLANCE_DATABASE.biteCases;
+  const filteredBites = window.filterDataset
+    ? window.filterDataset(window.SURVEILLANCE_DATABASE.biteCases, 'date')
+    : window.SURVEILLANCE_DATABASE.biteCases;
 
-  // Render pulsing ring hotspot for Zone 5 (Sharda Nagar) if bites count is high
-  const zone5BiteCount = filteredBites.filter(b => b.zone === "5").length;
-  if (zone5BiteCount >= 2) {
-    const ring = L.circle([26.7640, 80.9160], {
-      radius: 650, // geographical radius in meters
-      color: '#ef4444',
-      fillColor: '#ef4444',
-      fillOpacity: 0.12,
+  // ── 1. Detect proximity clusters within 100 m radius ────────────────────
+  const clusters = window.detectProximityClusters(filteredBites, 100);
+
+  // Track which clusters are genuinely new (not already alerted this session)
+  window._alertedClusterSeeds = window._alertedClusterSeeds || new Set();
+
+  clusters.forEach(cluster => {
+    const [cLat, cLng] = cluster.centroid;
+    const severity = cluster.highestSeverity;
+
+    // Color scale by highest severity in cluster
+    const color = severity === 'Category III' ? '#dc2626'
+      : severity === 'Category II'  ? '#f59e0b'
+      : '#10b981';
+    const fillColor = severity === 'Category III' ? '#ef4444'
+      : severity === 'Category II'  ? '#fbbf24'
+      : '#34d399';
+
+    // ── Outer pulsing warning ring (100 m radius = the detection boundary) ──
+    const outerRing = L.circle([cLat, cLng], {
+      radius: 100,
+      color: color,
+      fillColor: fillColor,
+      fillOpacity: 0.10,
+      weight: 2.5,
+      className: 'leaflet-pulsing-hotspot'
+    });
+
+    // ── Inner solid hotspot ring ──
+    const innerRing = L.circle([cLat, cLng], {
+      radius: 40,
+      color: color,
+      fillColor: fillColor,
+      fillOpacity: 0.30,
       weight: 2,
+      className: 'leaflet-pulsing-hotspot'
+    });
+
+    // ── Cluster Alert Marker (centroid pin with case count badge) ──
+    const clusterIcon = L.divIcon({
+      html: `
+        <div class="cluster-alert-pin" style="
+          width: 38px; height: 38px; border-radius: 50%;
+          background: ${color};
+          border: 3px solid white;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 0 0 3px ${color}55, 0 4px 14px rgba(0,0,0,0.25);
+          animation: clusterPinPulse 1.6s ease-in-out infinite;
+          cursor: pointer;
+          font-weight: 900; font-size: 0.85rem; color: white;
+          font-family: inherit;
+        ">⚠${cluster.caseCount}</div>`,
+      className: 'custom-leaflet-icon-container',
+      iconSize: [38, 38],
+      iconAnchor: [19, 19]
+    });
+
+    const clusterMarker = L.marker([cLat, cLng], { icon: clusterIcon, zIndexOffset: 1000 });
+
+    // Build popup listing all cases in this cluster
+    const caseListHtml = cluster.cases.map((c, idx) => `
+      <div style="display:flex; align-items:center; gap:0.4rem; padding:0.3rem 0;
+        ${idx < cluster.cases.length - 1 ? 'border-bottom: 1px solid rgba(0,0,0,0.06);' : ''}">
+        <span style="font-size:0.65rem; padding:0.1rem 0.3rem; border-radius:3px;
+          background:${c.severity === 'Category III' ? 'rgba(220,38,38,0.12)' : c.severity === 'Category II' ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'};
+          color:${c.severity === 'Category III' ? '#dc2626' : c.severity === 'Category II' ? '#f59e0b' : '#10b981'};
+          font-weight:800; white-space:nowrap;">
+          ${c.severity.split(' ')[0]} ${c.severity.split(' ')[1]}
+        </span>
+        <div style="font-size:0.72rem; line-height:1.3;">
+          <strong>Case #${c.id}</strong> — ${c.animal} bite<br>
+          <span style="color:var(--text-muted);">${c.reporter} · ${c.date}</span>
+          ${c.distanceFromSeed !== undefined ? `<span style="color:${color}; font-size:0.65rem; margin-left:0.25rem;">[${c.distanceFromSeed}m away]</span>` : ''}
+        </div>
+      </div>`).join('');
+
+    const popupContent = `
+      <div class="glass-popup-card" style="border-color:${color}; min-width:220px;">
+        <div class="glass-popup-header" style="background:${color}22; border-radius:8px 8px 0 0; padding:0.5rem 0.7rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <span style="font-size:1rem;">🔴</span>
+            <div>
+              <div style="font-weight:900; font-size:0.8rem; color:${color}; text-transform:uppercase; letter-spacing:0.5px;">
+                PROXIMITY CLUSTER ALERT
+              </div>
+              <div style="font-size:0.65rem; color:var(--text-muted);">${cluster.caseCount} cases within 100 m · Zone ${cluster.zone} (${cluster.ward})</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-popup-body" style="padding:0.6rem 0.75rem; max-height:180px; overflow-y:auto;">
+          <p style="font-size:0.68rem; color:#b91c1c; font-weight:700; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.3rem;">
+            ⚡ High-density animal bite cluster detected! Immediate veterinary response required.
+          </p>
+          ${caseListHtml}
+        </div>
+        <div style="padding:0.5rem 0.75rem; background:${color}0d; border-radius:0 0 8px 8px; font-size:0.65rem; color:${color}; font-weight:800; text-transform:uppercase; letter-spacing:0.4px;">
+          🏥 LMC ABC Squad Dispatch Recommended
+        </div>
+      </div>`;
+
+    clusterMarker.bindPopup(popupContent, { maxWidth: 280, className: 'leaflet-custom-popup-wrapper' });
+
+    window.activeAlertsLayer.addLayer(outerRing);
+    window.activeAlertsLayer.addLayer(innerRing);
+    window.activeAlertsLayer.addLayer(clusterMarker);
+
+    // ── 2. Authority Side-Panel Alert (inject once per cluster seed per session) ──
+    const clusterKey = `cluster-${cluster.seedId}`;
+    if (!window._alertedClusterSeeds.has(clusterKey)) {
+      window._alertedClusterSeeds.add(clusterKey);
+      injectClusterAlertCard(cluster, color);
+    }
+  });
+
+  // ── 3. Fallback: generic pulsing rings for high-bite zones (no proximity cluster) ──
+  // Only render if no proximity cluster already covers that zone
+  const clusterZones = new Set(clusters.map(c => c.zone));
+
+  const zone5BiteCount = filteredBites.filter(b => b.zone === '5').length;
+  if (zone5BiteCount >= 2 && !clusterZones.has('5')) {
+    const ring = L.circle([26.7640, 80.9160], {
+      radius: 650,
+      color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.08, weight: 2,
       className: 'leaflet-pulsing-hotspot'
     });
     window.activeAlertsLayer.addLayer(ring);
   }
 
-  // Render pulsing ring hotspot for Zone 1 (Hazratganj)
-  const zone1BiteCount = filteredBites.filter(b => b.zone === "1").length;
-  if (zone1BiteCount >= 1) {
+  const zone1BiteCount = filteredBites.filter(b => b.zone === '1').length;
+  if (zone1BiteCount >= 1 && !clusterZones.has('1')) {
     const ring = L.circle([26.8467, 80.9462], {
       radius: 450,
-      color: '#f59e0b',
-      fillColor: '#f59e0b',
-      fillOpacity: 0.12,
-      weight: 2,
+      color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.08, weight: 2,
       className: 'leaflet-pulsing-hotspot'
     });
     window.activeAlertsLayer.addLayer(ring);
   }
 };
+
+// Inject a persistent authority-panel alert card for a proximity cluster
+function injectClusterAlertCard(cluster, color) {
+  const alertsList = document.getElementById('authority-live-alerts-list');
+  if (!alertsList) return;
+
+  const severityLabel = cluster.highestSeverity === 'Category III'
+    ? '🔴 Category III (Critical)' : cluster.highestSeverity === 'Category II'
+    ? '🟡 Category II (Moderate)' : '🟢 Category I';
+
+  const newItem = document.createElement('div');
+  newItem.className = 'alert-feed-item animate-pop';
+  newItem.style.borderLeft = `4px solid ${color}`;
+  newItem.innerHTML = `
+    <div class="alert-feed-icon-pulsing" style="background: ${color}; animation: pulse-glow-icon 1s infinite;"></div>
+    <div class="alert-feed-details">
+      <h5 style="color: ${color}; font-weight: 900; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+        <span>🔴 PROXIMITY CLUSTER ALERT</span>
+        <span style="font-size:0.6rem; padding:0.1rem 0.35rem; border-radius:3px;
+          background:${color}22; color:${color}; border:1px solid ${color}55; font-weight:800; text-transform:uppercase;">
+          ${cluster.caseCount} Cases / 100 m
+        </span>
+      </h5>
+      <p style="font-size:0.77rem; line-height:1.45; margin-top:0.2rem;">
+        <strong>📍 Zone ${cluster.zone} (${cluster.ward})</strong><br>
+        <strong>${cluster.caseCount} bite / exposure cases</strong> detected within a <strong>100-metre radius</strong>.<br>
+        Highest severity: <strong>${severityLabel}</strong><br>
+        Case IDs involved: <code style="font-size:0.68rem; background:rgba(0,0,0,0.05); border-radius:3px; padding:0.1rem 0.3rem;">${cluster.cases.map(c => '#' + c.id).join(', ')}</code>
+      </p>
+      <div style="margin-top: 0.45rem; padding:0.4rem 0.55rem; border-radius:6px; background:${color}12; border:1px solid ${color}33;">
+        <span style="font-size:0.68rem; font-weight:800; color:${color}; text-transform:uppercase; letter-spacing:0.4px;">
+          ⚡ Immediate Action Required: Deploy LMC ABC Veterinary Squad to this sector.
+        </span>
+      </div>
+      <span class="alert-time" style="margin-top: 0.35rem;">Detected · just now</span>
+    </div>`;
+
+  alertsList.insertBefore(newItem, alertsList.firstChild);
+
+  // Also dispatch a toast notification
+  if (typeof window.dispatchNotification === 'function') {
+    window.dispatchNotification(
+      `🔴 Cluster Alert: Zone ${cluster.zone}`,
+      `${cluster.caseCount} bite cases within 100 m in ${cluster.ward}! Immediate ABC squad dispatch required.`,
+      'danger'
+    );
+  }
+}
+
+
 
 // Modal view to show detailed stats per Ward clicked on choropleth boundary
 function showWardAnalyticsModal(wardName, zone, coverage) {
