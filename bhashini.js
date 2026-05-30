@@ -4,7 +4,7 @@
 window.BHASHINI_DICTIONARY = {
   en: {
     app_title: "🐶 Benign Canine 🐾",
-    app_subtitle: "🗺️ Lucknow Municipality Disease Surveillance Hub 🏥",
+    app_subtitle: "🗺️ Lucknow Municipality Rabies Surveillance Hub 🏥",
     role_citizen: "👤 Citizen Portal 🏡",
     role_admin: "⚙️ Local Admin 🏛️",
     role_authority: "📊 Health Authority 🏢",

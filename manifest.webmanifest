@@ -1,7 +1,7 @@
 {
   "name": "Benign Canine - Rabies Surveillance",
   "short_name": "Benign Canine",
-  "description": "Lucknow Municipality Disease Surveillance & stray vaccination ABC dashboard.",
+  "description": "Lucknow Municipality Rabies Surveillance & stray vaccination ABC dashboard.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#e0f2fe",
